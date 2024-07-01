@@ -1,0 +1,100 @@
+# Maintainer: Duncan Bellamy <dunk@denkimushi.com>
+pkgname=seastar
+pkgver=22.11.0_git20240315
+pkgrel=3
+_commit="a8aa79b2b3bed89f7d90a40cfb4bd55b6e960070"
+_ver="${_commit:=$pkgver}"
+pkgdesc="High performance server-side application framework"
+url="https://seastar.io"
+# riscv64, loongarch64: valgrind
+# armhf armv7 x86 32bit not supported
+arch="all !x86 !armhf !armv7 !riscv64 !loongarch64"
+license="Apache-2.0"
+depends_dev="
+	$pkgname=$pkgver-r$pkgrel
+	$pkgname-testing=$pkgver-r$pkgrel
+	"
+makedepends="
+	boost-dev
+	bsd-compat-headers
+	c-ares-dev
+	cmake
+	crypto++-dev
+	fmt-dev
+	gnutls-dev
+	hwloc-dev
+	libpciaccess-dev
+	libucontext-dev
+	libunwind-dev
+	liburing-dev
+	lksctp-tools-dev
+	lz4-dev
+	numactl-dev
+	protobuf-dev
+	ragel
+	samurai
+	util-linux-dev
+	valgrind-dev
+	xfsprogs-dev
+	yaml-cpp-dev
+	"
+case "$CARCH" in
+aarch64|x86_64) makedepends="$makedepends dpdk-dev" ;;
+esac
+subpackages="$pkgname-dev $pkgname-testing"
+source="$pkgname-$_ver.tar.gz::https://github.com/scylladb/seastar/archive/$_ver.tar.gz
+	10-c-ares.patch
+	20-c-ares-ignore.patch"
+builddir="$srcdir/$pkgname-$_ver"
+
+build() {
+	case "$CARCH" in
+		aarch64|x86_64) local _dpdk=ON ;;
+		*) 		local _dpdk=OFF ;;
+	esac
+	if [ "$CBUILD" != "$CHOST" ]; then
+		local crossopts="-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_HOST_SYSTEM_NAME=Linux"
+	fi
+	export CXXFLAGS="$CXXFLAGS -DSEASTAR_DEFAULT_ALLOCATOR -Wno-cpp"
+	cmake -B build -G Ninja \
+		-DBUILD_SHARED_LIBS=ON \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DCMAKE_BUILD_TYPE=MinSizeRel \
+		-DSeastar_APPS=OFF \
+		-DSeastar_DEMOS=OFF \
+		-DSeastar_DOCS=OFF \
+		-DSeastar_DPDK="$_dpdk" \
+		$crossopts
+	cmake --build build
+}
+
+check() {
+	# rest: needs root (doesn't work in container) for hardware access
+	# see also: https://github.com/scylladb/seastar/issues/1826
+	local _tests="chunk_parsers|coroutines|fair_queue|file_io|httpd|request_parser|semaphore|stall_detector|tls|app-template"
+	case "$CARCH" in
+		ppc64le) _ppc64="|fsnotifier|network_interface|futures|execution_stage|fstream|directory" ;;
+	esac
+	ctest --test-dir build --output-on-failure \
+		-E "($_tests$_ppc64)"
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+dev() {
+	default_dev
+	amove usr/bin
+}
+
+testing() {
+	amove usr/lib/libseastar_*testing.so
+}
+
+sha512sums="
+3f23b6a64baaef45e1ae34cfbf364c1bdf11f5095d1dc85dfeb3fa1fc4866c734e745fcd71af1b23bb8ac29dfde9caab4d8c2ea3dd8923c4d9258a3f2d57f4e8  seastar-a8aa79b2b3bed89f7d90a40cfb4bd55b6e960070.tar.gz
+428a8159fdda063ab3d58dcc974837da392ec38272c08c6e77493898db2e54048e169ce0f41605de324baf8c38933968ebeef584cdb337f8b463fe56ae6bdfa5  10-c-ares.patch
+f40497f08e2f704d5da3fb9d37c8c2aba8a39e047de8664534826287873b1e90ca980b736aa2bf96bfd77bcbcc4ca612353d64c78a7cb566d59ffe55e2365eb0  20-c-ares-ignore.patch
+"

@@ -1,0 +1,32 @@
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@alpinelinux.org>
+# Maintainer: Natanael Copa <ncopa@alpinelinux.org>
+pkgname=parallel
+pkgver=20240522
+pkgrel=0
+pkgdesc="Shell tool for executing jobs in parallel"
+arch="noarch"
+url="https://www.gnu.org/software/parallel"
+license="GPL-3.0-or-later"
+options="!check" # Test suite not part of src pkg
+depends="perl"
+subpackages="$pkgname-doc $pkgname-bash-completion $pkgname-zsh-completion"
+source="https://ftp.gnu.org/gnu/parallel/parallel-$pkgver.tar.bz2"
+
+build() {
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--localstatedir=/var
+	make
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+}
+
+sha512sums="
+22156c2ba722696e8f85efcc5996e6811523c2545d8a3daf328801f09b1edb9665172ddce2cf738d1c6af87ac9da0268ec1e4b07178f81c4bea27f3903d78bfd  parallel-20240522.tar.bz2
+"

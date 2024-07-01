@@ -1,0 +1,32 @@
+# Contributor: Galen Abell <galen@galenabell.com>
+# Maintainer: Galen Abell <galen@galenabell.com>
+pkgname=py3-mpd2
+_pyname=python-mpd2
+pkgver=3.1.1
+pkgrel=1
+pkgdesc="python client interface for MPD"
+url="https://github.com/Mic92/python-mpd2"
+arch="noarch"
+license="LGPL-3.0-only"
+depends="python3"
+makedepends="py3-setuptools"
+checkdepends="py3-mock py3-twisted"
+subpackages="$pkgname-pyc"
+source="$_pyname-$pkgver.tar.gz::https://github.com/Mic92/python-mpd2/archive/v$pkgver.tar.gz"
+builddir="$srcdir/$_pyname-$pkgver"
+
+build() {
+	python3 setup.py build
+}
+
+check() {
+	python3 -m unittest mpd.tests
+}
+
+package() {
+	python3 setup.py install --skip-build --root="$pkgdir"
+}
+
+sha512sums="
+abd882bc0652ed4a8ee2f4abf0a039e7c62e77b35d278c5fc99bb032c220caac831cc483445516044964f2ea078d2134af61c64d55cb20770b4d32a5aa1ce5e2  python-mpd2-3.1.1.tar.gz
+"

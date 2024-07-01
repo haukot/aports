@@ -1,0 +1,44 @@
+# Maintainer: Hugo Osvaldo Barrera <hugo@whynothugo.nl>
+pkgname=shotman
+pkgver=0.4.6
+pkgrel=0
+pkgdesc="Uncompromising screenshot GUI for Wayland"
+url="https://git.sr.ht/~whynothugo/shotman"
+# s390x: nix/libc crate
+# loongarch64: blocked by libc crate
+arch="all !s390x !loongarch64"
+license="ISC"
+depends="slurp"
+makedepends="cargo libxkbcommon-dev scdoc cargo-auditable"
+subpackages="
+	$pkgname-doc
+	$pkgname-bash-completion
+	$pkgname-fish-completion
+	$pkgname-zsh-completion
+	"
+source="shotman-$pkgver.tar.gz::https://git.sr.ht/~whynothugo/shotman/archive/v$pkgver.tar.gz"
+builddir="$srcdir/$pkgname-v$pkgver"
+options="net" # fetch dependencies
+
+prepare() {
+	default_prepare
+
+	cargo fetch --target="$CTARGET" --locked
+}
+
+build() {
+	export SHOTMAN_VERSION=$pkgver
+	make build
+}
+
+check() {
+	cargo test --frozen
+}
+
+package() {
+	DESTDIR="$pkgdir" PREFIX="/usr" make install --trace
+}
+
+sha512sums="
+6546ccce72f707fdc03033e767abd1494601070323f24364993b7a080243ac1c64b1fa84d65c3a6f3898c54b782aefec60c8079badc435f3574504071005fd3c  shotman-0.4.6.tar.gz
+"

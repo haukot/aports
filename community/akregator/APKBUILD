@@ -1,0 +1,66 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: team/kde <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=kde-applications
+pkgname=akregator
+pkgver=24.05.1
+pkgrel=0
+# armhf blocked by extra-cmake-modules
+# armv7, ppc64le, s390x and riscv64 blocked by qt6-qtwebengine
+# loongarch64 blocked by pimcommon
+arch="all !armhf !armv7 !ppc64le !s390x !riscv64 !loongarch64"
+url="https://apps.kde.org/akregator/"
+pkgdesc="RSS Feed Reader"
+license="GPL-2.0-or-later AND LGPL-2.0-or-later"
+makedepends="
+	akonadi-mime-dev
+	extra-cmake-modules
+	grantlee-dev
+	grantleetheme-dev
+	kcmutils-dev
+	kcrash-dev
+	kdoctools-dev
+	kiconthemes-dev
+	knotifications-dev
+	knotifyconfig-dev
+	kontactinterface-dev
+	kparts-dev
+	kpimtextedit-dev
+	kstatusnotifieritem-dev
+	ktextaddons-dev
+	ktexteditor-dev
+	kxmlgui-dev
+	libkdepim-dev
+	libkleo-dev
+	messagelib-dev
+	pimcommon-dev
+	qt6-qtbase-dev
+	qt6-qtwebengine-dev
+	samurai
+	syndication-dev
+	"
+checkdepends="xvfb-run"
+subpackages="$pkgname-doc $pkgname-lang"
+_repo_url="https://invent.kde.org/pim/akregator.git"
+source="https://download.kde.org/stable/release-service/$pkgver/src/akregator-$pkgver.tar.xz"
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=MinSizeRel \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib
+	cmake --build build
+}
+
+check() {
+	xvfb-run ctest --test-dir build --output-on-failure
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+5d1397a427b93771eb61ae573003e1a62fc094e003e5f06b977081ee24053e7f8ba7c69d34abf8a96bae69f38818dbe26d826eebdfc83bd695ba3b4fdbb6697b  akregator-24.05.1.tar.xz
+"

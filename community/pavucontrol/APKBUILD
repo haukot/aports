@@ -1,0 +1,35 @@
+# Maintainer: Noam Preil <pleasantatk@gmail.com>
+pkgname=pavucontrol
+pkgver=6.0
+pkgrel=0
+pkgdesc="Pulseaudio Volume Control, GTK based mixer for Pulseaudio"
+url="https://freedesktop.org/software/pulseaudio/pavucontrol/"
+arch="all"
+license="GPL-2.0-or-later"
+subpackages="$pkgname-lang $pkgname-doc"
+makedepends="
+	gtkmm4-dev
+	json-glib-dev
+	libcanberra-dev
+	libsigc++3-dev
+	meson
+	pulseaudio-dev
+	"
+source="https://freedesktop.org/software/pulseaudio/pavucontrol/pavucontrol-$pkgver.tar.gz"
+# check: No test available
+options="!check"
+
+build() {
+	abuild-meson \
+		-Dlynx=false \
+		. output
+	meson compile -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="
+469cf3ebacf5650236f47103a88241ed277d5a9a42b6faa4f664869df35f55888cea46e750158f4418ca4fa5d5ca5e15ddcf4c2a7cc19147f02ca7dd360825e8  pavucontrol-6.0.tar.gz
+"

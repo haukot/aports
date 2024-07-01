@@ -1,0 +1,33 @@
+# Contributor: Adam Thiede <me@adamthiede.com>
+# Maintainer: Adam Thiede <me@adamthiede.com>
+pkgname=bluetuith
+pkgver=0.2.2
+pkgrel=2
+pkgdesc="TUI-based bluetooth connection manager"
+url="https://github.com/darkhz/bluetuith"
+arch="all"
+license="MIT"
+depends="bluez dbus"
+makedepends="go"
+source="$pkgname-$pkgver.tar.gz::https://github.com/darkhz/bluetuith/archive/v$pkgver.tar.gz"
+builddir="$srcdir/$pkgname-$pkgver/"
+
+export GOCACHE="${GOCACHE:-"$srcdir/go-cache"}"
+export GOTMPDIR="${GOTMPDIR:-"$srcdir"}"
+export GOMODCACHE="${GOMODCACHE:-"$srcdir/go"}"
+
+build() {
+	go build
+}
+
+check() {
+	go test -v
+}
+
+package() {
+	install -Dm0755 "$pkgname" "$pkgdir"/usr/bin/"$pkgname"
+}
+
+sha512sums="
+5b943ab1a4f5cac1b3da0ac64bea18013f4ba7fe2246c6e33011d18e7a0f384363c9e06558b25131b6ccc4ea3910961178821d24fb21f38c551b18a6500830d4  bluetuith-0.2.2.tar.gz
+"

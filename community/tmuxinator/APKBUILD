@@ -1,0 +1,58 @@
+# Contributor: Kevin Daudt <kdaudt@alpinelinux.org>
+# Maintainer: Kevin Daudt <kdaudt@alpinelinux.org>
+pkgname=tmuxinator
+pkgver=3.2.1
+pkgrel=0
+pkgdesc="manage complex tmux sessions easily"
+url="https://github.com/tmuxinator/tmuxinator"
+arch="noarch"
+license="MIT"
+depends="tmux ruby ruby-erubi ruby-thor ruby-xdg"
+checkdepends="ruby-rspec"
+options="!check" # requires coveralls
+subpackages="
+	$pkgname-bash-completion
+	$pkgname-fish-completion
+	$pkgname-zsh-completion
+	"
+source="https://github.com/tmuxinator/tmuxinator/archive/v$pkgver/tmuxinator-$pkgver.tar.gz
+	tmuxinator-use-new-xdg-version.patch
+	"
+
+build() {
+	gem build tmuxinator.gemspec
+}
+
+check() {
+	rspec
+}
+
+package() {
+	local gemdir="$pkgdir/$(ruby -e 'puts Gem.default_dir')"
+
+	gem install \
+		--local \
+		--install-dir "$gemdir" \
+		--bindir "$pkgdir/usr/bin" \
+		--ignore-dependencies \
+		--no-document \
+		--verbose \
+		tmuxinator
+
+	install -Dm0644 completion/tmuxinator.bash \
+		"$pkgdir"/usr/share/bash-completion/completions/tmuxinator
+	install -Dm0644 completion/tmuxinator.fish \
+		"$pkgdir"/usr/share/fish/vendor_completions.d/tmuxinator.fish
+	install -Dm0644 completion/tmuxinator.zsh \
+		"$pkgdir"/usr/share/zsh/site-functions/_tmuxinator
+
+	rm -r "$gemdir"/cache \
+		"$gemdir"/extensions \
+		"$gemdir"/doc \
+		"$gemdir"/gems/tmuxinator-$pkgver/spec
+}
+
+sha512sums="
+613abd3d2262d5d125528aedc27148a67e8456dd39460006c821f3a46e36ec5fd698caa493905e97a3c0521858a9628548c575e9c913078136ae78a35ec96ad0  tmuxinator-3.2.1.tar.gz
+1c6d0e708301662e2175c6c5c67658683af5135fd0a1bb156a18159f4a59e65e466a8c2434b8236c56ae99708f54a2451ffdec281109218291cf8e89f39f192f  tmuxinator-use-new-xdg-version.patch
+"

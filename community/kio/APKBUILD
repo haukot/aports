@@ -1,0 +1,77 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: team/kde <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=kde-frameworks
+pkgname=kio
+pkgver=6.3.0
+pkgrel=0
+pkgdesc="Resource and network access abstraction"
+# armhf blocked by extra-cmake-modules
+arch="all !armhf"
+url="https://community.kde.org/Frameworks"
+license="LGPL-2.1-only AND LGPL-2.1-or-later AND (LGPL-2.1-only OR LGPL-3.0-only)"
+depends="kded"
+depends_dev="
+	acl-dev
+	karchive-dev
+	kbookmarks-dev
+	kcompletion-dev
+	kconfig-dev
+	kconfigwidgets-dev
+	kcoreaddons-dev
+	kcrash-dev
+	kdbusaddons-dev
+	ki18n-dev
+	kiconthemes-dev
+	kitemviews-dev
+	kjobwidgets-dev
+	knotifications-dev
+	kservice-dev
+	kwallet-dev
+	kwidgetsaddons-dev
+	kwindowsystem-dev
+	solid-dev
+	"
+makedepends="$depends_dev
+	doxygen
+	extra-cmake-modules
+	kdoctools-dev
+	libxml2-dev
+	libxslt-dev
+	qt6-qttools-dev
+	samurai
+	"
+checkdepends="xvfb-run"
+subpackages="$pkgname-dev $pkgname-dbg $pkgname-doc $pkgname-lang $pkgname-kwallet"
+_repo_url="https://invent.kde.org/frameworks/kio.git"
+source="https://download.kde.org/stable/frameworks/${pkgver%.*}/kio-$pkgver.tar.xz"
+# Checks fails due to requiring physical devices not normally available and test 14 hangs
+options="!check"
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_QCH=ON
+	cmake --build build
+}
+
+check() {
+	xvfb-run ctest --test-dir build --output-on-failure
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+kwallet() {
+	pkgdesc="$pkgname KWallet integration"
+
+	amove usr/lib/qt6/plugins/kf6/kiod/kpasswdserver.so
+}
+
+sha512sums="
+679630599318b7058d7d4c14218dc4fa23f1c0f8267ff1896397288bde8a39a70a0578d1546642f13383fc4f2919136c62e39106608f8b98d499d017e87ae0a2  kio-6.3.0.tar.xz
+"

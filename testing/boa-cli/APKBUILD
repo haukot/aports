@@ -1,0 +1,39 @@
+# Contributor: lauren n. liberda <lauren@selfisekai.rocks>
+# Maintainer: lauren n. liberda <lauren@selfisekai.rocks>
+pkgname=boa-cli
+pkgver=0.18
+pkgrel=0
+pkgdesc="Embeddable and experimental Javascript engine written in Rust"
+url="https://github.com/boa-dev/boa/"
+# 32-bit: failing tests
+# ppc64le: corosensei crate
+# s390x: nix crate
+# loongarch64: blocked by libc crate
+arch="all !armhf !armv7 !x86 !ppc64le !s390x !loongarch64"
+license="MIT OR Unlicense"
+makedepends="cargo cargo-auditable"
+checkdepends="openssl-dev"
+source="https://github.com/boa-dev/boa/archive/refs/tags/v$pkgver/boa-$pkgver.tar.gz"
+builddir="$srcdir/boa-$pkgver"
+
+prepare() {
+	default_prepare
+
+	cargo fetch --target="$CTARGET" --locked
+}
+
+build() {
+	cargo auditable build --package boa_cli --release --frozen --bin boa
+}
+
+check() {
+	cargo test --frozen
+}
+
+package() {
+	install -Dm755 target/release/boa "$pkgdir"/usr/bin/boa
+}
+
+sha512sums="
+a7b61f22b7081d55316a9260da7adc740033de2258c441ce599ba082ae07d1712e51de8f575bd997b6b367bc7d0655839cfc16b0014a56283ff9de3a40c0fb12  boa-0.18.tar.gz
+"

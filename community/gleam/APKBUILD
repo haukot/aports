@@ -1,0 +1,36 @@
+# Contributor: rubicon <rubicon@mailo.com>
+# Maintainer: Celeste <cielesti@protonmail.com>
+pkgname=gleam
+pkgver=1.2.1
+pkgrel=0
+pkgdesc="Statically-typed language that compiles to Erlang and JS"
+url="https://gleam.run/"
+# s390x, riscv64, ppc64le, loongarch64: ring
+# armhf: error: Undefined temporary symbol .LBB88_2
+arch="all !armhf !s390x !riscv64 !ppc64le !loongarch64"
+license="Apache-2.0"
+depends="erlang-dev"
+makedepends="cargo cargo-auditable"
+source="$pkgname-$pkgver.tar.gz::https://github.com/gleam-lang/gleam/archive/refs/tags/v$pkgver.tar.gz"
+
+prepare() {
+	default_prepare
+
+	cargo fetch --target="$CTARGET" --locked
+}
+
+build() {
+	cargo auditable build --frozen --release
+}
+
+check() {
+	cargo test --frozen
+}
+
+package() {
+	install -Dvm755 target/release/gleam -t "$pkgdir"/usr/bin/
+}
+
+sha512sums="
+c842ede06d0a777e42fdd23eee1997d52071328ca485b6f48c09fc212e0248f8f9b1e682ea229ed8686369a0e8e9503799e3d254f133b249092308c557e6954a  gleam-1.2.1.tar.gz
+"

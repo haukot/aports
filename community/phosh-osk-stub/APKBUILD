@@ -1,0 +1,52 @@
+# Contributor: jane400 <alpine@j4ne.de>
+# Maintainer: team/phosh <newbyte@postmarketos.org>
+pkgname=phosh-osk-stub
+pkgver=0.38.0
+pkgrel=1
+pkgdesc="OSK experiment and helper to debug input related issues with phosh"
+arch="all"
+url="https://gitlab.gnome.org/guidog/phosh-osk-stub"
+license="GPL-3.0-or-later"
+subpackages="$pkgname-doc"
+makedepends="
+	cmd:rst2man
+	elogind-dev
+	feedbackd-dev
+	glib-dev
+	gnome-desktop-dev
+	gtk+3.0-dev
+	hunspell-dev
+	json-glib-dev
+	libhandy1-dev
+	meson
+	wayland-dev
+	wayland-protocols
+	"
+checkdepends="xvfb-run"
+source="https://gitlab.gnome.org/guidog/phosh-osk-stub/-/archive/v$pkgver/phosh-osk-stub-v$pkgver.tar.gz"
+builddir="$srcdir/$pkgname-v$pkgver"
+
+provides="phosh-keyboard"
+provider_priority=1
+replaces="phosh squeekboard"
+
+build() {
+	abuild-meson \
+		-Db_lto=true \
+		-Dman=true \
+		. output
+	meson compile -C output
+}
+
+check() {
+	xvfb-run -a meson test --no-rebuild --print-errorlogs -C output
+}
+
+package() {
+	depends="!squeekboard"
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="
+12ec075f9d0ec77dd44599f84e0374a174e04248b9d3d4702c56a692cccd143762019f1954c87eb291b5eb85ce3002d41e585a5eb2f823075e8efb4cb657cf03  phosh-osk-stub-v0.38.0.tar.gz
+"

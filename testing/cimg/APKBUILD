@@ -1,0 +1,21 @@
+# Contributor: Grigory Kirillov <txgk@bk.ru>
+# Maintainer: Sergiy Stupar <owner@sestolab.pp.ua>
+pkgname=cimg
+pkgver=3.3.5
+pkgrel=0
+pkgdesc="Small C++ toolkit for image processing"
+url="https://cimg.eu"
+arch="noarch"
+license="CECILL-C OR CECILL-2.0"
+options="!check" # no test suite
+source="https://github.com/GreycLab/CImg/archive/v.$pkgver/CImg-v.$pkgver.tar.gz"
+builddir="$srcdir/CImg-v.$pkgver"
+
+package() {
+	install -Dm644 CImg.h -t "$pkgdir"/usr/include/
+	install -Dm644 plugins/*.h -t "$pkgdir"/usr/include/CImg/plugins/
+}
+
+sha512sums="
+dfcdaf923de725a706733361358871c8a7e7780b12e3d658de907803f4b31b6b2473c129cff08ca7d9012e66ab5f99e308d2dbc21dd7218f028028a423bcf68d  CImg-v.3.3.5.tar.gz
+"

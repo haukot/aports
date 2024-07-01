@@ -1,0 +1,34 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=py3-ovos-ocp-m3u-plugin
+pkgver=0.0.2_alpha2
+pkgrel=0
+pkgdesc="ovos-core m3u plugin"
+url="https://github.com/OpenVoiceOS/ovos-ocp-m3u-plugin"
+arch="noarch !s390x !loongarch64" # blocked by py3-ovos-ocp-audio-plugin
+license="Apache-2.0"
+depends="py3-ovos-ocp-audio-plugin"
+makedepends="
+	py3-gpep517
+	py3-setuptools
+	py3-wheel
+	"
+subpackages="$pkgname-pyc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/OpenVoiceOS/ovos-ocp-m3u-plugin/archive/refs/tags/V${pkgver//_alpha/a}.tar.gz"
+options="!check" # No tests
+builddir="$srcdir/ovos-ocp-m3u-plugin-${pkgver//_alpha/a}"
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/*.whl
+}
+
+sha512sums="
+7823dd17e4bf00c92b99d936bbc57b249fdd629b9e9df36a7cf84c1a97b088200d93c3e8e4eae5193252d3ce7ccf76ac8c143d67baa8e462caf03209429507ea  py3-ovos-ocp-m3u-plugin-0.0.2_alpha2.tar.gz
+"

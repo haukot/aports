@@ -1,0 +1,74 @@
+# Contributor: Carter Li <zhangsongcui@live.cn>
+# Maintainer: Carter Li <zhangsongcui@live.cn>
+pkgname=fastfetch
+pkgver=2.16.0
+pkgrel=0
+pkgdesc="Like neofetch, but much faster because written mostly in C."
+url="https://github.com/fastfetch-cli/fastfetch"
+arch="all"
+license="MIT"
+depends="
+	hwdata-pci
+	"
+makedepends="
+	cmake samurai
+	yyjson-dev
+	yyjson-static
+	vulkan-loader-dev
+	libxcb-dev
+	wayland-dev
+	libdrm-dev
+	dconf-dev
+	imagemagick-dev
+	chafa-dev
+	zlib-dev
+	dbus-dev
+	mesa-dev
+	opencl-dev
+	xfconf-dev
+	sqlite-dev
+	networkmanager-dev
+	pulseaudio-dev
+	ddcutil-dev
+	"
+subpackages="
+	$pkgname-doc
+	$pkgname-bash-completion
+	$pkgname-fish-completion
+	"
+source="$pkgname-$pkgver.tar.gz::https://github.com/fastfetch-cli/fastfetch/archive/refs/tags/$pkgver.tar.gz"
+
+
+prepare() {
+	default_prepare
+
+	rm -rf src/3rdparty/yyjson
+}
+
+build() {
+	if [ "$CBUILD" != "$CHOST" ]; then
+		local crossopts="-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_HOST_SYSTEM_NAME=Linux"
+	fi
+	cmake -B build -G Ninja \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DENABLE_SYSTEM_YYJSON=ON \
+		-DENABLE_DIRECTX_HEADERS=OFF \
+		$crossopts
+	cmake --build build --target fastfetch --target flashfetch
+}
+
+check() {
+	build/fastfetch --list-features
+	build/fastfetch -c presets/ci.jsonc
+	build/fastfetch -c presets/ci.jsonc --format json
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+3a09e48775946876c69dfa8a739a090a18aa4598f455f6860d41962efeac2064127bf2a31d3a62ccc285682d12548402cf812eae01d56bc068b7855b0f00d4a7  fastfetch-2.16.0.tar.gz
+"

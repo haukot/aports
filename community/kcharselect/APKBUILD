@@ -1,0 +1,47 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: team/kde <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=kde-applications
+pkgname=kcharselect
+pkgver=24.05.1
+pkgrel=0
+# armhf blocked by extra-cmake-modules
+arch="all !armhf"
+url="https://kde.org/applications/utilities/org.kde.kcharselect"
+pkgdesc="A tool to select special characters from all installed fonts and copy them into the clipboard"
+license="GPL-2.0-or-later"
+makedepends="
+	extra-cmake-modules
+	kbookmarks-dev
+	kcrash-dev
+	kdoctools-dev
+	ki18n-dev
+	kwidgetsaddons-dev
+	kxmlgui-dev
+	qt6-qtbase-dev
+	samurai
+	"
+subpackages="$pkgname-doc $pkgname-lang"
+_repo_url="https://invent.kde.org/utilities/kcharselect.git"
+source="https://download.kde.org/stable/release-service/$pkgver/src/kcharselect-$pkgver.tar.xz"
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib
+	cmake --build build
+}
+
+check() {
+	ctest --test-dir build --output-on-failure
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+da1339f998e82e7fe2999ae3d456f7a7de6f67f99373749c06fea085ac60b2b78b8162a029f5e5fef1ac547fd9da8c8d1ca5862cee79ee61417c5cf537d978ac  kcharselect-24.05.1.tar.xz
+"

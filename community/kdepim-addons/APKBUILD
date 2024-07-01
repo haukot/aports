@@ -1,0 +1,94 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: team/kde <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=kde-applications
+pkgname=kdepim-addons
+pkgver=24.05.1
+pkgrel=0
+# armhf blocked by extra-cmake-modules
+# armv7, ppc64le, s390x and riscv64 blocked by qt6-qtwebengine
+# loongarch64 blocked by pimcommon
+arch="all !armhf !armv7 !ppc64le !s390x !riscv64 !loongarch64"
+url="https://kontact.kde.org/"
+pkgdesc="Addons for KDE PIM applications"
+license="GPL-2.0-or-later AND LGPL-2.0-or-later"
+makedepends="
+	akonadi-calendar-dev
+	akonadi-contacts-dev
+	akonadi-dev
+	akonadi-import-wizard-dev
+	akonadi-notes-dev
+	discount-dev
+	extra-cmake-modules
+	gpgme-dev
+	grantlee-dev
+	grantleetheme-dev
+	incidenceeditor-dev
+	kaddressbook-dev
+	kcalendarcore-dev
+	kcalutils-dev
+	kconfig-dev
+	kcontacts-dev
+	kdbusaddons-dev
+	kdeclarative-dev
+	kholidays-dev
+	ki18n-dev
+	kiconthemes-dev
+	kidentitymanagement-dev
+	kimap-dev
+	kio-dev
+	kitinerary-dev
+	kmailtransport-dev
+	kontactinterface-dev
+	kparts-dev
+	kpimtextedit-dev
+	kpkpass-dev
+	ktnef-dev
+	kxmlgui-dev
+	libgravatar-dev
+	libkdepim-dev
+	libkleo-dev
+	libksieve-dev
+	mailcommon-dev
+	mailimporter-dev
+	messagelib-dev
+	pimcommon-dev
+	prison-dev
+	qt6-qtbase-dev
+	qt6-qtwebengine-dev
+	samurai
+	syntax-highlighting-dev
+	"
+checkdepends="
+	dbus
+	drkonqi
+	xvfb-run
+	"
+subpackages="$pkgname-lang"
+_repo_url="https://invent.kde.org/pim/kdepim-addons.git"
+source="https://download.kde.org/stable/release-service/$pkgver/src/kdepim-addons-$pkgver.tar.xz"
+# net required to download Rust crates
+# tests are broken and hang
+options="!check net"
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DKDEPIMADDONS_BUILD_EXAMPLES=OFF
+	cmake --build build
+}
+
+check() {
+	dbus-run-session xvfb-run ctest --test-dir build --output-on-failure
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+246fd8504abd33456f2f1208ee59d0d870777f816c0329730b0b9de88800189140e1531a62c435551a496728bada7cffb0e88aca8981f16daf80ef74703d8447  kdepim-addons-24.05.1.tar.xz
+"

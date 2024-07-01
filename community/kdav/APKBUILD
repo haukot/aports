@@ -1,0 +1,51 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: team/kde <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=kde-frameworks
+pkgname=kdav
+pkgver=6.3.0
+pkgrel=0
+pkgdesc="A DAV protocol implementation with KJobs"
+url="https://community.kde.org/Frameworks"
+# armhf blocked by qt6-qtdeclarative
+arch="all !armhf"
+license="LGPL-2.0-or-later"
+depends_dev="
+	kcoreaddons-dev
+	ki18n-dev
+	kio-dev
+	qt6-qtbase-dev
+
+	"
+makedepends="$depends_dev
+	doxygen
+	extra-cmake-modules
+	qt6-qttools-dev
+	samurai
+	"
+checkdepends="xvfb-run"
+subpackages="$pkgname-dev $pkgname-doc $pkgname-lang"
+_repo_url="https://invent.kde.org/frameworks/kdav.git"
+source="https://download.kde.org/stable/frameworks/${pkgver%.*}/kdav-$pkgver.tar.xz"
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_QCH=ON
+	cmake --build build
+}
+
+check() {
+	xvfb-run ctest --test-dir build --output-on-failure -E "kdav-dav(itemfetchjob|collectionsmultifetchjobtest)"
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+4f5adcdd2e72b7bef566df4935d1101f2de058b8bbf50a22eb1be8aad80e90cec80342f584d575d38aab0aea829ed9b9ce981179a53e6a2687aa539e94d02f0d  kdav-6.3.0.tar.xz
+"

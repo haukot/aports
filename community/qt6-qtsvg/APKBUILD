@@ -1,0 +1,51 @@
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=qt6
+pkgname=qt6-qtsvg
+pkgver=6.6.3
+pkgrel=0
+pkgdesc="Classes for displaying the contents of SVG files"
+url="https://qt.io/"
+arch="all"
+license="LGPL-2.1-only AND LGPL-3.0-only AND GPL-3.0-only AND Qt-GPL-exception-1.0"
+depends_dev="
+	qt6-qtbase-dev
+	vulkan-headers
+	"
+makedepends="$depends_dev
+	cmake
+	perl
+	samurai
+	"
+subpackages="$pkgname-dev"
+options="!check" # No tests
+builddir="$srcdir/qtsvg-everywhere-src-${pkgver/_/-}"
+
+case $pkgver in
+	*_alpha*|*_beta*|*_rc*) _rel=development_releases;;
+	*) _rel=official_releases;;
+esac
+
+source="https://download.qt.io/$_rel/qt/${pkgver%.*}/${pkgver/_/-}/submodules/qtsvg-everywhere-src-${pkgver/_/-}.tar.xz"
+
+# secfixes:
+#   6.5.0-r1:
+#     - CVE-2023-32573
+
+build() {
+	export CFLAGS="$CFLAGS -g1 -flto=auto"
+	export CXXFLAGS="$CXXFLAGS -g1 -flto=auto"
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+78d588ebc60d90b86f8d639b49081a616abe0adedbd32381dd7853693065ee2e41b40ee4221d4c13c04c71a7f9780b35f3c472f5b9b5fa96af6835d711eb4937  qtsvg-everywhere-src-6.6.3.tar.xz
+"

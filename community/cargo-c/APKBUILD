@@ -1,0 +1,68 @@
+# Contributor: Oleg Titov <oleg.titov@gmail.com>
+# Maintainer: Oleg Titov <oleg.titov@gmail.com>
+pkgname=cargo-c
+pkgver=0.9.32
+pkgrel=0
+pkgdesc="cargo subcommand to build and install C-ABI compatibile dynamic and static libraries"
+url="https://github.com/lu-zero/cargo-c"
+arch="all"
+license="MIT"
+# nghttp2-sys doesn't support system
+makedepends="
+	cargo
+	cargo-auditable
+	curl-dev
+	libgit2-dev
+	libssh2-dev
+	openssl-dev>3
+	zlib-dev
+	"
+subpackages="$pkgname-doc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/lu-zero/cargo-c/archive/v$pkgver.tar.gz
+	$pkgname-$pkgver-Cargo.lock::https://github.com/lu-zero/cargo-c/releases/download/v$pkgver/Cargo.lock"
+options="net" # To download crates
+
+export LIBSSH2_SYS_USE_PKG_CONFIG=1
+export DEP_NGHTTP2_ROOT=/usr
+
+prepare() {
+	default_prepare
+
+	cp "$srcdir"/$pkgname-$pkgver-Cargo.lock Cargo.lock
+
+	# Rust target triple.
+	local target=$(rustc -vV | sed -n 's/host: //p')
+
+	# Build against system-provided libs
+	mkdir -p .cargo
+	cat >> .cargo/config.toml <<-EOF
+		[target.$target]
+		git2 = { rustc-link-lib = ["git2"] }
+	EOF
+
+	cargo fetch --target="$CTARGET" --locked
+}
+
+build() {
+	cargo auditable build --release --frozen
+}
+
+check() {
+	# fixes debug builds of p384 on 32b architectures
+	# https://gitlab.alpinelinux.org/alpine/aports/-/merge_requests/58129#note_391279
+	export RUST_MIN_STACK=8388608
+
+	cargo test --frozen
+}
+
+package() {
+	rm target/release/cargo-*.d
+	install -Dm755 target/release/cargo-* -t "$pkgdir"/usr/bin/
+
+	install -Dm644 -t "$pkgdir/usr/share/doc/cargo-c" README.md
+}
+
+sha512sums="
+fd7cb71db0189b2fe5daa872e7873a4da94deb7ca3dd552aede1c1a171fa83848184a7c6307c1dcb0e59f58fd4860ab47c365fdac9a5e2918da9468a92a3a11a  cargo-c-0.9.32.tar.gz
+d607854f27f098245ddaada4dc652d4bbe9e91f063058ff7639d5d7d18ed892201a879869dbc0b875241ff10afa972b9d75704935233bb35225bab43e15cf77f  cargo-c-0.9.32-Cargo.lock
+"

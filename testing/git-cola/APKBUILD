@@ -1,0 +1,36 @@
+# Contributor: Kiyoshi Aman <kiyoshi.aman@gmail.com>
+# Maintainer:
+pkgname=git-cola
+pkgver=4.4.1
+pkgrel=1
+pkgdesc="GUI application for git built on Python & Qt"
+url="https://git-cola.github.io"
+arch="noarch !armhf !riscv64" # py3-qt6
+license="GPL-2.0-or-later"
+depends="python3 py3-qt6 py3-qtpy"
+makedepends="py3-setuptools py3-setuptools_scm py3-gpep517 py3-installer py3-wheel"
+checkdepends="py3-pytest"
+subpackages="$pkgname-doc $pkgname-pyc"
+source="git-cola-$pkgver.tar.gz::https://github.com/git-cola/git-cola/archive/v$pkgver.tar.gz"
+# testsuite hangs after a while.
+options="!check"
+
+build() {
+	export SETUPTOOLS_SCM_PRETEND_VERSION=$pkgver
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 1
+}
+
+check() {
+	pytest
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/git_cola*.whl
+}
+
+sha512sums="
+3e4e1cb8cd148b34e663c72c6b3d1e887815b5a86558ffbf13a19a5dfd3fb6b37c123290dc514b6f098893587dc67ca34424aaad5482768795e353f0efe92797  git-cola-4.4.1.tar.gz
+"

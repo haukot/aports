@@ -1,0 +1,76 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: team/kde <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=kde-applications
+pkgname=kio-extras
+pkgver=24.05.1
+pkgrel=0
+# armhf blocked by extra-cmake-modules
+arch="all !armhf"
+url="https://www.kde.org/applications/internet/"
+pkgdesc="Additional components to increase the functionality of KIO"
+license="GPL-2.0-or-later (LGPL-2.1-only OR LGPL-3.0-only)"
+makedepends="
+	extra-cmake-modules
+	gperf
+	karchive-dev
+	kbookmarks-dev
+	kcmutils-dev
+	kconfig-dev
+	kconfigwidgets-dev
+	kcoreaddons-dev
+	kdbusaddons-dev
+	kdnssd-dev
+	kdoctools-dev
+	kdsoap-qt6-dev
+	kdsoap-ws-discovery-client-dev
+	kguiaddons-dev
+	ki18n-dev
+	kiconthemes-dev
+	kio-dev
+	kpty-dev
+	kstatusnotifieritem-dev
+	libkexiv2-dev
+	libmtp-dev
+	libssh-dev
+	nfs-utils-dev
+	phonon-dev
+	plasma-activities-stats-dev
+	qcoro-dev
+	qt6-qtbase-dev
+	qt6-qtsvg-dev
+	samba-dev
+	samurai
+	shared-mime-info
+	solid-dev
+	syntax-highlighting-dev
+	taglib-dev
+	"
+checkdepends="xvfb-run dbus"
+subpackages="$pkgname-doc $pkgname-lang"
+_repo_url="https://invent.kde.org/network/kio-extras.git"
+source="https://download.kde.org/stable/release-service/$pkgver/src/kio-extras-$pkgver.tar.xz"
+
+replaces="kio5"
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib
+	cmake --build build
+}
+
+check() {
+	dbus-run-session -- xvfb-run ctest --test-dir build --output-on-failure \
+		-E "testkioarchive|thumbnailtest|ActivityBasicTest"
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+908c7e1ecdd47aaa655f55979ecbb2778d406e35f3aa307a83ebe2274ea9aa3ddfa965fabbd60df68051e942e09166fcfcdc838679cea6093745b3d4464de097  kio-extras-24.05.1.tar.xz
+"

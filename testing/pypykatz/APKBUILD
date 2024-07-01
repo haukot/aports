@@ -1,0 +1,44 @@
+# Contributor: Jonas <3426-spameier@users.gitlab.alpinelinux.org>
+# Maintainer: Jonas <3426-spameier@users.gitlab.alpinelinux.org>
+pkgname=pypykatz
+pkgver=0.6.9
+pkgrel=1
+pkgdesc="Python implementation of Mimikatz"
+url="https://github.com/skelsec/pypykatz"
+# loongarch64: blocked by py3-unicrypto
+arch="noarch !loongarch64"
+license="MIT"
+depends="
+	py3-aesedb
+	py3-aiosmb
+	py3-aiowinreg
+	py3-minidump
+	py3-minikerberos
+	py3-msldap
+	py3-tqdm
+	py3-unicrypto
+	py3-winacl
+	python3
+	"
+makedepends="
+	py3-gpep517
+	py3-wheel
+	py3-setuptools
+	"
+subpackages="$pkgname-pyc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/skelsec/pypykatz/archive/refs/tags/$pkgver.tar.gz"
+options="!check" # no tests provided
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" .dist/*.whl
+}
+
+sha512sums="
+ac2c64424c1352c45c667116acf65c5aff9976db92f2f8a678b2e578410073484b4ae7e787e03f84d349f4b6277fa3927f2b2b471800a2fa193c007a5a90d1aa  pypykatz-0.6.9.tar.gz
+"

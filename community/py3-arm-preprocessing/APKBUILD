@@ -1,0 +1,38 @@
+# Contributor: Iztok Fister, Jr. <iztok@iztok-jr-fister.eu>
+# Maintainer: Iztok Fister, Jr. <iztok@iztok-jr-fister.eu>
+pkgname=py3-arm-preprocessing
+pkgver=0.2.2
+pkgrel=1
+pkgdesc="Implementation of preprocessing techniques for association rule mining"
+url="https://github.com/firefly-cpp/arm-preprocessing"
+arch="noarch"
+license="MIT"
+depends="python3 py3-niaarm py3-pandas py3-scikit-learn py3-sport-activities-features"
+makedepends="py3-gpep517 py3-poetry-core"
+checkdepends="py3-pytest-xdist"
+subpackages="$pkgname-doc $pkgname-pyc"
+source="https://github.com/firefly-cpp/arm-preprocessing/archive/$pkgver/arm-preprocessing-$pkgver.tar.gz"
+builddir="$srcdir/arm-preprocessing-$pkgver"
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	python3 -m venv --clear --without-pip --system-site-packages .testenv
+	.testenv/bin/python3 -m installer .dist/*.whl
+	.testenv/bin/python3 -m pytest
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/*.whl
+
+	install -Dm644 README.md -t "$pkgdir"/usr/share/doc/$pkgname
+}
+
+sha512sums="
+ad362a1ffa2b493b55f8a150b5febb6b9289c6badf6411ae7b997bb64e6ed52597c007b8c26ea8d6770e2a4ccf3b4fedf7099f7c48135f856be45c89fdccc346  arm-preprocessing-0.2.2.tar.gz
+"

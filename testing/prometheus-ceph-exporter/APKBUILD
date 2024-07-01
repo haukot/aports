@@ -1,0 +1,48 @@
+# Contributor: Alex Denes <caskd@redxen.eu>
+# Maintainer: Alex Denes <caskd@redxen.eu>
+pkgname=prometheus-ceph-exporter
+pkgver=4.2.3
+pkgrel=3
+pkgdesc="Prometheus exporter that scrapes meta information about a ceph cluster"
+url="https://github.com/digitalocean/ceph_exporter"
+license="Apache-2.0"
+# riscv64, 32bit: doesn't build
+arch="all !x86 !armhf !armv7"
+makedepends="
+	ceph-dev
+	linux-headers
+	go
+	"
+install="$pkgname.pre-install $pkgname.pre-upgrade"
+subpackages="$pkgname-openrc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/digitalocean/ceph_exporter/archive/refs/tags/$pkgver.tar.gz
+	ceph-exporter.initd
+	ceph-exporter.confd
+	"
+builddir="$srcdir/ceph_exporter-$pkgver"
+options="net"
+
+export GOCACHE="${GOCACHE:-"$srcdir/go-cache"}"
+export GOTMPDIR="${GOTMPDIR:-"$srcdir"}"
+export GOMODCACHE="${GOMODCACHE:-"$srcdir/go"}"
+
+build() {
+	go build -o ceph-exporter -tags "quincy reef" # support ceph 16 and 18
+}
+
+check() {
+	go test -tags "quincy reef" ./...
+}
+
+package() {
+	install -Dm755 ceph-exporter -t "$pkgdir"/usr/bin/
+
+	install -Dm755 "$srcdir"/ceph-exporter.initd "$pkgdir"/etc/init.d/ceph-exporter
+	install -Dm644 "$srcdir"/ceph-exporter.confd "$pkgdir"/etc/conf.d/ceph-exporter
+}
+
+sha512sums="
+2106cb2bcc99b5108dc20a60013075be7718b5f156be6f917210d77659d2b4a5d2e49d810fc8275e33a5ddd2afb6e86ec007132ef3851efa8f72afd907143733  prometheus-ceph-exporter-4.2.3.tar.gz
+392448b600c3dab44718ccf3133fdc349ebc840f9fe4f8445be10bcc3c4c65cd7db96babe52ae9cec8cbf22d72865bd6794da1b4ee990c279d586b08c8dd8b3e  ceph-exporter.initd
+2278273061c1f8e216193f1b0a00dbe0d791c460b803ff14408f1519bf2ee7daf402162741057a648747be9647510215d262f1e1672cd1cab0224a7e9175af53  ceph-exporter.confd
+"

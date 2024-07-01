@@ -1,0 +1,40 @@
+# Contributor: Łukasz Jendrysik <scadu@yandex.com>
+# Contributor: Natanael Copa <ncopa@alpinelinux.org>
+# Maintainer: Natanael Copa <ncopa@alpinelinux.org>
+pkgname=orc
+pkgver=0.4.38
+pkgrel=0
+pkgdesc="Oil Run-time Compiler"
+url="https://gstreamer.freedesktop.org/modules/orc.html"
+arch="all"
+license="BSD-2-Clause"
+depends_dev="$pkgname-compiler=$pkgver-r$pkgrel"
+makedepends="linux-headers meson"
+subpackages="$pkgname-dev $pkgname-compiler"
+source="https://gstreamer.freedesktop.org/src/orc/orc-$pkgver.tar.xz"
+
+build() {
+	abuild-meson \
+		-Db_lto=true \
+		-Dorc-test=disabled \
+		. output
+	meson compile -C output
+}
+
+check() {
+	meson test --no-rebuild --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+compiler() {
+	pkgdesc="Orc compiler"
+
+	amove usr/bin
+}
+
+sha512sums="
+49f34be85f6980e4b5e94f848016f5788b658323f3a120110bc237722ac99938c02976efbe96022d148054330432899533305d4dd21be8fab76fd1995179339a  orc-0.4.38.tar.xz
+"

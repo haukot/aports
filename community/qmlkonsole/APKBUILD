@@ -1,0 +1,50 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: team/kde <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=kde-applications
+pkgname=qmlkonsole
+pkgver=24.05.1
+pkgrel=0
+pkgdesc="Terminal app for Plasma Mobile"
+# armhf blocked by extra-cmake-modules
+arch="all !armhf"
+url="https://invent.kde.org/plasma-mobile/qmlkonsole"
+license="GPL-3.0-or-later"
+depends="
+	kirigami-addons
+	kirigami
+	"
+makedepends="
+	extra-cmake-modules
+	ki18n-dev
+	kirigami-addons-dev
+	kirigami-dev
+	kpty-dev
+	qt6-qt5compat-dev
+	qt6-qtbase-dev
+	qt6-qtdeclarative-dev
+	qt6-qtsvg-dev
+	samurai
+	"
+subpackages="$pkgname-lang"
+_repo_url="https://invent.kde.org/plasma-mobile/qmlkonsole.git"
+source="https://download.kde.org/stable/release-service/$pkgver/src/qmlkonsole-$pkgver.tar.xz"
+# No tests
+options="!check"
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+55890af1925832406248e9b8af9fa8330dc84efa7cb436e99f8e5b1246bd27c3ed5243bbddeb346ca284cf396b5b85f1c37513c272b5e93a00997237dde4a476  qmlkonsole-24.05.1.tar.xz
+"

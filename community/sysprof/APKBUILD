@@ -1,0 +1,53 @@
+# Contributor: Rasmus Thomsen <oss@cogitri.dev>
+# Maintainer: Natanael Copa <ncopa@alpinelinux.org>
+pkgname=sysprof
+pkgver=46.0
+pkgrel=0
+pkgdesc="System-wide profiler for Linux"
+url="http://www.sysprof.com/"
+# ppc64le: libdex
+arch="all !ppc64le"
+license="GPL-2.0-or-later"
+depends_dev="$pkgname=$pkgver-r$pkgrel" # sysprof's lib setup is a bit weird...
+makedepends="
+	desktop-file-utils
+	elogind-dev
+	glib-dev
+	gtk4.0-dev
+	itstool
+	json-glib-dev
+	libadwaita-dev
+	libdex-dev
+	libpanel-dev
+	libunwind-dev
+	meson
+	polkit-dev
+	"
+#options="!check" # test-model-filter fails
+subpackages="$pkgname-static $pkgname-dev $pkgname-doc $pkgname-lang"
+source="https://download.gnome.org/sources/sysprof/${pkgver%.*}/sysprof-$pkgver.tar.xz
+	0001-libsysprof-add-missing-header-for-close-function.patch
+	"
+
+build() {
+	abuild-meson \
+		-Db_lto=true \
+		-Dgtk=true \
+		-Dsystemdunitdir=systemd \
+		. output
+	meson compile -C output
+}
+
+check() {
+	meson test --no-rebuild --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+	rm -rf "$pkgdir"/usr/systemd
+}
+
+sha512sums="
+f04d887218257d177f7bc68485bcc47c310188335530ff9bf5e3efa7c383d56e97d5d969b2e8b5b0469993456aa734873c599f3d743615716305b8c7f113f534  sysprof-46.0.tar.xz
+16834f0d96249395b3de2d5acc34e98250762b5d7966773772a07c835c3d2d6d0f85f75c7f416da89519fc62c769e4ddc2c1a58cd088edbe69d5963b98cd33ff  0001-libsysprof-add-missing-header-for-close-function.patch
+"

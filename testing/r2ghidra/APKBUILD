@@ -1,0 +1,55 @@
+# Contributor: Maxim Karasev <mxkrsv@disroot.org>
+# Maintainer: Patrycja Rosa <alpine@ptrcnull.me>
+pkgname=r2ghidra
+pkgver=5.9.2
+_ghidra_native=0.4.5
+pkgrel=0
+pkgdesc="native ghidra decompiler for radare2"
+url="https://github.com/radareorg/r2ghidra"
+# this is massive, and nobody is going to use a decompiler on other
+# architectures
+arch="x86_64 aarch64 ppc64le"
+license="LGPL-3.0-only AND Apache-2.0"
+depends="radare2"
+makedepends="
+	libzip-dev
+	meson
+	openssl-dev
+	pugixml-dev
+	radare2-dev
+	"
+source="https://github.com/radareorg/r2ghidra/archive/refs/tags/$pkgver/r2ghidra-$pkgver.tar.gz
+	https://github.com/radareorg/ghidra-native/archive/refs/tags/$_ghidra_native/ghidra-native-$_ghidra_native.tar.gz
+	use-system-pugixml.patch"
+options="!check" # no tests
+
+prepare() {
+	default_prepare
+	mv "$srcdir"/ghidra-native-"$_ghidra_native" "$builddir"/ghidra-native
+	make -C "$builddir"/ghidra-native patch
+}
+
+build() {
+	abuild-meson \
+		-Db_lto=true \
+		. output
+	meson compile -C output
+
+	# not implemented for meson yet
+	cd ghidra
+	make sleigh-build
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+
+	# not implemented for meson yet
+	cd "$builddir"/ghidra
+	make D="$pkgdir"/usr/lib/radare2/$pkgver/r2ghidra_sleigh sleigh-install
+}
+
+sha512sums="
+ffb6143393cbb246f6e1bc41aba21a46349c8d157ec7f6687e71abdc56b9a726b3e10b489af21f9eeeb3e8fc0f633f2004b73dde9af4f51c0dcccf9476ef92c0  r2ghidra-5.9.2.tar.gz
+0e62b8dfdbb6f4f8e3935ad89c34b4940dbeb89cabdc692e4fd4a8b3db1ee3c743f95bc38618a976f134ddb5463981851101c83288ab8c19325d69f023ce909a  ghidra-native-0.4.5.tar.gz
+e8e7a4956f862686514fad1ed9403a18bd2f68edd67d5bd03772b9a543ffed9f7b0fb68bdda8b13842a5efd9dce1a6836e0dcf9b26f843b72e2e838d4da9aa10  use-system-pugixml.patch
+"

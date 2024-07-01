@@ -1,0 +1,44 @@
+# Maintainer: Natanael Copa <ncopa@alpinelinux.org>
+pkgname=k0sctl
+pkgver=0.18.0
+pkgrel=0
+pkgdesc="Bootstrapping and management tool for k0s clusters"
+url="https://github.com/k0sproject/k0sctl"
+arch="all"
+license="Apache-2.0"
+makedepends="go"
+subpackages="
+	$pkgname-bash-completion
+	$pkgname-fish-completion
+	$pkgname-zsh-completion
+	"
+source="https://github.com/k0sproject/k0sctl/archive/refs/tags/v$pkgver/k0sctl-$pkgver.tar.gz"
+options="chmod-clean"
+
+export GOCACHE="${GOCACHE:-"$srcdir/go-cache"}"
+export GOTMPDIR="${GOTMPDIR:-"$srcdir"}"
+export GOMODCACHE="${GOMODCACHE:-"$srcdir/go"}"
+
+build() {
+	make TAG_NAME="v$pkgver" GIT_COMMIT=""
+
+	for shell in bash fish zsh; do
+		./$pkgname completion --shell $shell >$pkgname.$shell
+	done
+}
+
+check() {
+	make test
+}
+
+package() {
+	make PREFIX=/usr DESTDIR="$pkgdir" install
+
+	install -Dm644 $pkgname.bash "$pkgdir"/usr/share/bash-completion/completions/$pkgname
+	install -Dm644 $pkgname.fish "$pkgdir"/usr/share/fish/vendor_completions.d/$pkgname.fish
+	install -Dm644 $pkgname.zsh "$pkgdir"/usr/share/zsh/site-functions/_$pkgname
+}
+
+sha512sums="
+dd2e4ab68e7d93a5bcec878fa8a772def4e45746ebbea206e813933d315e6d265937ab72d1d6d993888eb4b548c2b2328d01c743758585bac3aa8a511b84256b  k0sctl-0.18.0.tar.gz
+"

@@ -1,0 +1,46 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: team/kde <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=kde-frameworks
+pkgname=kquickcharts
+pkgver=6.3.0
+pkgrel=0
+pkgdesc="A QtQuick plugin providing high-performance charts"
+arch="all !armhf" # armhf blocked by qt6-qtdeclarative
+url="https://community.kde.org/Frameworks"
+license="LGPL-2.1-only OR LGPL-3.0-only"
+depends_dev="$pkgname=$pkgver-r$pkgrel
+	qt6-qtbase-dev
+	qt6-qtdeclarative-dev
+	"
+makedepends="$depends_dev
+	extra-cmake-modules
+	samurai
+	"
+checkdepends="xvfb-run"
+subpackages="$pkgname-dev"
+_repo_url="https://invent.kde.org/frameworks/kquickcharts.git"
+source="https://download.kde.org/stable/frameworks/${pkgver%.*}/kquickcharts-$pkgver.tar.xz"
+# Requires working OpenGL
+options="!check"
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib
+	cmake --build build
+}
+
+check() {
+	xvfb-run ctest --test-dir build --output-on-failure
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+da4ee3aacbed0d39eb6cf20c6ba941e56200948ada4c08236e195d0abbce2dbe4f553a293ddbacc272dd1864826a0548fdac943cf3c0fbf3a6c0526aa20a957e  kquickcharts-6.3.0.tar.xz
+"

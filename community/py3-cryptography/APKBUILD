@@ -1,0 +1,83 @@
+# Contributor: August Klein <amatcoder@gmail.com>
+# Maintainer: Duncan Bellamy <dunk@denkimushi.com>
+pkgname=py3-cryptography
+pkgver=42.0.8
+pkgrel=0
+pkgdesc="Cryptographic recipes and primitives for Python"
+url="https://cryptography.io/"
+arch="all"
+license="Apache-2.0 OR BSD-3-Clause"
+depends="python3 py3-cffi"
+makedepends="
+	libffi-dev
+	openssl-dev>3
+	py3-flit-core
+	py3-gpep517
+	py3-setuptools
+	py3-setuptools-rust
+	py3-wheel
+	python3-dev
+	"
+checkdepends="
+	py3-certifi
+	py3-hypothesis
+	py3-iso8601
+	py3-pretend
+	py3-pytest
+	py3-pytest-benchmark
+	py3-pytest-subtests
+	py3-pytest-xdist
+	py3-tz
+	"
+subpackages="$pkgname-pyc"
+source="https://files.pythonhosted.org/packages/source/c/cryptography/cryptography-$pkgver.tar.gz
+	https://files.pythonhosted.org/packages/source/c/cryptography_vectors/cryptography_vectors-$pkgver.tar.gz
+	skip-aead-tests-on-32-bit.patch
+	Cargo-update.patch
+	"
+builddir="$srcdir/cryptography-$pkgver"
+options="net"
+
+replaces="py-cryptography" # Backwards compatibility
+provides="py-cryptography=$pkgver-r$pkgrel" # Backwards compatibility
+
+# secfixes:
+#   41.0.2-r0:
+#     - CVE-2023-38325
+#   39.0.1-r0:
+#     - CVE-2023-23931
+#   3.2.2-r0:
+#     - CVE-2020-36242
+#   3.2.1-r0:
+#     - CVE-2020-25659
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+
+	# prepare cryptography vectors for testing
+	cd "$srcdir/cryptography_vectors-$pkgver"
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	python3 -m venv --clear --without-pip --system-site-packages test-env
+	test-env/bin/python3 -m installer .dist/cryptography*.whl
+	test-env/bin/python3 -m installer "$srcdir"/cryptography_vectors-$pkgver/.dist/cryptography*.whl
+	test-env/bin/python3 -m pytest -n $JOBS
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/cryptography-*.whl
+}
+
+sha512sums="
+db56db956649c05dea9f405341164126147e94e09ecef3535b63e2fecdb3d64a008c23aedc868406eea0dc1ea8a8efbc2fb29b74b7f04cc50454039e2d2e647f  cryptography-42.0.8.tar.gz
+c81fb4a3773e84504e2f4f935cbf572ed056531671a66c65e55a6377ac8ae9006e0d7d0cc24141c32cbded74bccce487e21290afbe8548318951d4c4de00a84f  cryptography_vectors-42.0.8.tar.gz
+670ecc2d95083186bf7e986b18093ac289c218e7ab77b54258e21d09fd5729f551cf876645f2a175086c1a089926a367426d7745ef406efc3d1d82286d454323  skip-aead-tests-on-32-bit.patch
+c94a839f0e69137ded2043d3776ba5744a42144ef73b52bde537d90a567f754e4be5ee081b3f67f246c299356b87a6948b8e0e123c6b8fdefb6bb575893fdea1  Cargo-update.patch
+"

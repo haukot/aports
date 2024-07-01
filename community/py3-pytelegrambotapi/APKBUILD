@@ -1,0 +1,46 @@
+# Contributor: Antoine Martin (ayakael) <dev@ayakael.net>
+# Maintainer: Antoine Martin (ayakael) <dev@ayakael.net>
+pkgname=py3-pytelegrambotapi
+pkgver=4.19.1
+# sometimes upstream forgets to tag pypi releases
+_gittag=a3f7e307b0b9b8a07c637b30f4a4871ab45fd449
+pkgrel=0
+arch="noarch"
+pkgdesc="A simple, but extensible Python implementation for the Telegram Bot API."
+url="https://pypi.org/project/pyTelegramBotAPI/"
+license="GPL-2.0-only"
+depends="py3-requests"
+makedepends="
+	py3-setuptools
+	py3-gpep517
+	py3-wheel
+	py3-hatchling
+	"
+checkdepends="
+	py3-aiohttp
+	py3-pytest
+	"
+source="$pkgname-$_gittag.tar.gz::https://github.com/eternnoir/pyTelegramBotAPI/archive/$_gittag.tar.gz"
+builddir="$srcdir"/pyTelegramBotAPI-$_gittag
+subpackages="$pkgname-pyc"
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	python3 -m venv --clear --without-pip --system-site-packages .testenv
+	.testenv/bin/python3 -m installer "$builddir"/.dist/*.whl
+	.testenv/bin/python3 -m pytest -v
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/*.whl
+}
+
+sha512sums="
+c11d33e8daccf3267d8c935c95bef62033c449b147a10d3d66d3194aa35fc147068194018b18e8b0ebe9d1b121d7d961bcc1a3647d2946b44be675e40b26f0ab  py3-pytelegrambotapi-a3f7e307b0b9b8a07c637b30f4a4871ab45fd449.tar.gz
+"

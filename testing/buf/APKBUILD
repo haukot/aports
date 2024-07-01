@@ -1,0 +1,79 @@
+# Maintainer: Hoang Nguyen <folliekazetani@protonmail.com>
+pkgname=buf
+pkgver=1.31.0
+pkgrel=2
+pkgdesc="CLI to work with Protocol Buffers"
+url="https://buf.build/"
+# 32bit: fail tests with int overflow
+arch="all !x86 !armhf !armv7"
+license="Apache-2.0"
+makedepends="go"
+checkdepends="protobuf-dev protoc-gen-go"
+subpackages="
+	$pkgname-bash-completion
+	$pkgname-fish-completion
+	$pkgname-zsh-completion
+	$pkgname-protoc-plugins:_protoc
+	"
+source="$pkgname-$pkgver.tar.gz::https://github.com/bufbuild/buf/archive/refs/tags/v$pkgver.tar.gz"
+options="net" # download Go modules
+
+# private/bufpkg/bufstudioagent tests time out
+case "$CARCH" in
+	riscv64|ppc64le) options="$options !check"
+esac
+
+export GOCACHE="${GOCACHE:-"$srcdir/go-cache"}"
+export GOTMPDIR="${GOTMPDIR:-"$srcdir"}"
+export GOMODCACHE="${GOMODCACHE:-"$srcdir/go"}"
+
+build() {
+	for binary in buf protoc-gen-buf-breaking protoc-gen-buf-lint; do
+		go build -v ./cmd/$binary
+	done
+
+	for shell in bash fish zsh; do
+		./buf completion $shell > buf.$shell
+	done
+
+	# These programs are required for check phase
+	mkdir -p "$builddir"/bin
+	for cmd in writer receiver; do
+		go build -v -o bin/ ./private/buf/cmd/buf/command/alpha/protoc/internal/protoc-gen-insertion-point-$cmd
+	done
+}
+
+check() {
+	export PATH="$PATH:$builddir/bin"
+
+	# TestCompareGeneratedStubsGoogleapisGo fails due to difference in protoc versions
+	# TestCompareGoogleapis fails (TODO: investigate more)
+	# TestGitCloner tries to clone a remote repository
+	# TestWorkspaceGit checks the project root whether it is a git repo
+	go test -skip 'TestCompareGeneratedStubsGoogleapisGo|TestCompareGoogleapis|TestGitCloner|TestWorkspaceGit' ./...
+}
+
+package() {
+	install -Dm755 buf -t "$pkgdir"/usr/bin/
+
+	install -Dm644 buf.bash \
+		"$pkgdir"/usr/share/bash-completion/completions/buf
+	install -Dm644 buf.fish \
+		"$pkgdir"/usr/share/fish/vendor_completions.d/buf.fish
+	install -Dm644 buf.zsh \
+		"$pkgdir"/usr/share/zsh/site-functions/_buf
+
+	install -Dm755 protoc-gen-buf-breaking protoc-gen-buf-lint \
+		-t "$pkgdir"/usr/bin/
+}
+
+_protoc() {
+	pkgdesc="$pkgdesc (protoc plugins)"
+	depends="protoc"
+
+	amove usr/bin/protoc-gen-buf-*
+}
+
+sha512sums="
+ddee58f528f938718fafdf5ae751b815edb2e62edf43b0710bd480d164484a9d7a1a6cef1ab948b93abe8cad8b56d5e3fc274edaf90caca1a9ec1f3831b0975c  buf-1.31.0.tar.gz
+"

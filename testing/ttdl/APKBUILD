@@ -1,0 +1,39 @@
+# Contributor: Thomas Böhler <witcher@wiredspace.de>
+# Maintainer: Thomas Böhler <witcher@wiredspace.de>
+pkgname=ttdl
+pkgver=4.3.0
+pkgrel=0
+pkgdesc="Terminal Todo List Manager"
+url="https://github.com/VladimirMarkelov/ttdl"
+arch="all !ppc64le !s390x !riscv64"
+license="MIT"
+makedepends="cargo cargo-auditable"
+subpackages="$pkgname-doc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/VladimirMarkelov/ttdl/archive/refs/tags/v$pkgver.tar.gz"
+
+prepare() {
+	default_prepare
+
+	cargo fetch --target="$CTARGET" --locked
+}
+
+build() {
+	cargo auditable build --frozen --release
+}
+
+check() {
+	cargo test --frozen
+}
+
+package() {
+	install -Dm755 target/release/ttdl "$pkgdir"/usr/bin/ttdl
+
+	install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/"$pkgname"/LICENSE
+	install -Dm644 changelog "$pkgdir"/usr/share/doc/"$pkgname"/changelog
+	install -Dm644 intro.md "$pkgdir"/usr/share/doc/"$pkgname"/intro.md
+	install -Dm644 README.md "$pkgdir"/usr/share/doc/"$pkgname"/README.md
+}
+
+sha512sums="
+63394c6838b0fc9cd108109c1e552dad832fe05dc7ad3a9a6b758f8f5455aee963948442e5cc4ba54d9e2987a5734bbb2f67b3168aa4e5f3a7e7848c880627b8  ttdl-4.3.0.tar.gz
+"

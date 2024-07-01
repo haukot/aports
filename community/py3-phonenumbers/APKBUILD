@@ -1,0 +1,42 @@
+# Contributor: Kaarle Ritvanen <kunkku@alpinelinux.org>
+# Maintainer: Kaarle Ritvanen <kunkku@alpinelinux.org>
+pkgname=py3-phonenumbers
+pkgver=8.13.39
+pkgrel=0
+pkgdesc="International phone number library for Python"
+url="https://github.com/daviddrysdale/python-phonenumbers"
+arch="noarch"
+license="Apache-2.0"
+depends="python3"
+makedepends="
+	py3-gpep517
+	py3-setuptools
+	py3-wheel
+	"
+subpackages="$pkgname-pyc"
+source="https://files.pythonhosted.org/packages/source/p/phonenumbers/phonenumbers-$pkgver.tar.gz"
+builddir="$srcdir/phonenumbers-$pkgver"
+
+replaces="py-phonenumbers" # Backwards compatibility
+provides="py-phonenumbers=$pkgver-r$pkgrel" # Backwards compatibility
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	python3 -m venv --clear --without-pip --system-site-packages .testenv
+	.testenv/bin/python3 -m installer .dist/*.whl
+	.testenv/bin/python3 testwrapper.py
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/*.whl
+}
+
+sha512sums="
+21bef7be2e7e60fa6823977e4e46d02f87b1a2fa4dc60a6104956e4b0837e4fcd8257f4741129477cb43a36881d5ed93a3fcdf92f5fab73b2053d6827bae4efa  phonenumbers-8.13.39.tar.gz
+"

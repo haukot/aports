@@ -1,0 +1,63 @@
+# Contributor: Michał Polański <michal@polanski.me>
+# Maintainer: Michał Polański <michal@polanski.me>
+pkgname=borgmatic
+pkgver=1.8.11
+pkgrel=0
+pkgdesc="Simple, configuration-driven backup software for servers and workstations"
+url="https://torsion.org/borgmatic/"
+license="GPL-3.0-or-later"
+# s390x: tests fail
+# loongarch64: blocked by py3-jsonschema
+arch="noarch !s390x !loongarch64"
+depends="
+	borgbackup
+	py3-colorama
+	py3-jsonschema
+	py3-packaging
+	py3-requests
+	py3-ruamel.yaml
+	"
+makedepends="
+	py3-gpep517
+	py3-setuptools
+	py3-wheel
+	"
+checkdepends="
+	py3-pytest
+	py3-pytest-cov
+	py3-flexmock
+	"
+subpackages="$pkgname-bash-completion $pkgname-pyc"
+source="$pkgname-$pkgver.tar.gz::https://projects.torsion.org/borgmatic-collective/borgmatic/archive/$pkgver.tar.gz"
+builddir="$srcdir/borgmatic"
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+
+	python3 -m venv --clear --without-pip --system-site-packages venv
+	./venv/bin/python3 -m installer \
+		.dist/borgmatic-$pkgver-py3-none-any.whl
+	./venv/bin/borgmatic --bash-completion > $pkgname.bash
+}
+
+check() {
+	python3 -m venv --clear --without-pip --system-site-packages .testenv
+	.testenv/bin/python3 -m installer .dist/*.whl
+	# Requires apprise package that is currently in testing
+	PATH="$PATH:$builddir/.testenv/bin" .testenv/bin/python3 -m pytest \
+		--ignore=tests/unit/hooks/test_apprise.py
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/borgmatic-$pkgver-py3-none-any.whl
+
+	install -Dm644 $pkgname.bash \
+		"$pkgdir"/usr/share/bash-completion/completions/$pkgname
+}
+
+sha512sums="
+da4c7a31f8056bd254f6810941934aff541a4ff3f08b29cfc72b9d90e18d8a77fb6d195c161cfc3c7d27df3b1647fe33124372a6af6f43026a0d1c53f9b7ca54  borgmatic-1.8.11.tar.gz
+"

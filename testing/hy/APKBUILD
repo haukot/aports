@@ -1,0 +1,54 @@
+# Contributor: Sören Tempel <soeren+alpine@soeren-tempel.net>
+# Maintainer: Sören Tempel <soeren+alpine@soeren-tempel.net>
+pkgname=hy
+pkgver=0.29.0
+pkgrel=0
+pkgdesc="Dialect of Lisp that's embedded in Python"
+url="http://hylang.org/"
+arch="noarch"
+license="MIT"
+depends="python3 py3-funcparserlib py3-rply py3-colorama"
+makedepends="py3-setuptools py3-sphinx py3-sphinxcontrib-hydomain py3-sphinx_rtd_theme py3-wheel"
+checkdepends="python3-tests py3-pytest py3-pytest-runner py3-tox"
+options="net"
+subpackages="$pkgname-pyc"
+#subpackages="$pkgname-doc $pkgname-pyc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/hylang/hy/archive/$pkgver.tar.gz"
+
+# By default setup.py tries to determine the hy version using
+# git-describe(1). Unfourtunatly, this will return the version
+# of the aports repository on Alpine.
+export HY_VERSION="$pkgver"
+
+build() {
+	python3 setup.py build
+
+	# TODO: Building the documentation requires py3-sphinx == 5.0.2.
+	#cd docs
+	#sphinx-build . _build -b man
+}
+
+check() {
+	# Ignore tests requiring binaries to be installed
+	pytest --ignore tests/test_bin.py \
+		--ignore tests/test_hy2py.py
+}
+
+package() {
+	python3 setup.py install --skip-build --root="$pkgdir"
+
+	# XXX: See comment regarding documentation above.
+	# local man
+	# for man in docs/_build/*.?; do
+	# 	install -Dm644 "$man" \
+	# 		"$pkgdir"/usr/share/man/man${man##*.}/${man##*/}
+	# done
+
+	# This file is only needed for setuptools-produced source
+	# distributions <https://github.com/hylang/hy/commit/bd7b8bf5e19e>.
+	rm -rf "$pkgdir"/usr/get_version
+}
+
+sha512sums="
+b0094ea59bd9a6bcd27037cd5b8d5542132ead2e3287b2590fceb765b92cf583d4ce4530186f9b83aee5cc97dd1fe94c699a1e17eae56442a634845144d02257  hy-0.29.0.tar.gz
+"

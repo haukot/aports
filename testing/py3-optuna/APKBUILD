@@ -1,0 +1,52 @@
+# Contributor: Iztok Fister, Jr. <iztok@iztok-jr-fister.eu>
+# Maintainer: Iztok Fister, Jr. <iztok@iztok-jr-fister.eu>
+pkgname=py3-optuna
+_pkgorig=optuna
+pkgver=3.6.1
+pkgrel=1
+pkgdesc="Hyperparameter optimization framework"
+url="https://optuna.org"
+arch="noarch"
+license="MIT"
+depends="
+	python3
+	py3-alembic
+	py3-colorlog
+	py3-cmaes
+	py3-numpy
+	py3-packaging
+	py3-scipy
+	py3-sqlalchemy
+	py3-tqdm
+	py3-yaml
+	"
+checkdepends="
+	python3-dev
+	"
+makedepends="
+	py3-gpep517
+	py3-setuptools
+	py3-wheel
+	"
+subpackages="$pkgname-pyc"
+source="https://github.com/optuna/optuna/archive/v$pkgver/$_pkgorig-$pkgver.tar.gz"
+builddir="$srcdir/optuna-$pkgver"
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+# several test dependencies are missing | use smoke tests now
+check() {
+	PYTHONPATH=build/lib python3 -c "import optuna"
+}
+
+package() {
+	python3 -m installer --destdir="$pkgdir" .dist/*.whl
+}
+
+sha512sums="
+f8c04157c9dd8a82ecd2034ef818ead99580724c3c06c16e93bf996441432051a6fecd31ca11de9e75586f81fe566892dcbc32148b57e2801b02c9fa28c79bf7  optuna-3.6.1.tar.gz
+"

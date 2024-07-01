@@ -1,0 +1,88 @@
+# Contributor: John Gebbie <me@johngebbie.com>
+# Maintainer: John Gebbie <me@johngebbie.com>
+pkgname=openfst
+pkgver=1.8.3
+pkgrel=0
+pkgdesc="Finite-state transducers library"
+url="https://www.openfst.org"
+# doesn't build on other arches
+arch="x86_64 aarch64 armv7"
+license="Apache-2.0"
+subpackages="
+	$pkgname-dev
+	libfst
+	libfstcompact
+	libfstconst
+	libfstfar
+	libfstlookahead
+	libfstngram
+	"
+source="https://www.openfst.org/twiki/pub/FST/FstDownload/openfst-$pkgver.tar.gz
+	fix-check.patch"
+
+build() {
+	CFLAGS="$CFLAGS -O2" \
+	CXXFLAGS="$CXXFLAGS -O2" \
+	./configure \
+		--build="$CBUILD" \
+		--host="$CHOST" \
+		--prefix=/usr \
+		--disable-bin \
+		--disable-dependency-tracking \
+		--disable-static \
+		--enable-compact-fsts \
+		--enable-compress \
+		--enable-const-fsts \
+		--enable-far \
+		--enable-linear-fsts \
+		--enable-lookahead-fsts \
+		--enable-mpdt \
+		--enable-ngram-fsts \
+		--enable-pdt \
+		--enable-shared \
+		--with-pic
+
+	make
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+}
+
+check() {
+	make check
+}
+
+libfst() {
+	amove usr/lib/libfst.so.*
+}
+
+libfstcompact() {
+	depends="$pkgname=$pkgver-r$pkgrel"
+	amove usr/lib/libfstcompact.so.*
+}
+
+libfstconst() {
+	depends="$pkgname=$pkgver-r$pkgrel"
+	amove usr/lib/libfstconst.so.*
+}
+
+libfstfar() {
+	depends="$pkgname=$pkgver-r$pkgrel"
+	amove usr/lib/libfstfar.so.*
+}
+
+libfstlookahead() {
+	depends="$pkgname=$pkgver-r$pkgrel"
+	amove usr/lib/libfstlookahead.so.*
+}
+
+libfstngram() {
+	depends="$pkgname=$pkgver-r$pkgrel"
+	amove usr/lib/libfstngram.so.*
+}
+
+sha512sums="
+26717ee019a05412d29ea611af651a443823999aab4e9834d2da7ce67d9aa1434ccacbcd19c0247386129272ddaec286f608be4d118ebef68d74c29a3b861d54  openfst-1.8.3.tar.gz
+8826567c4a2627e7115ca2269ddaaca5bab4430a8cb3b163106e524023c55983ba1da490ccba0f1379266f42b87dfcdeb0cbb627cf5183e07a7e5fe84d08ed68  fix-check.patch
+"

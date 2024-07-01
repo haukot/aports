@@ -1,0 +1,41 @@
+# Contributor: Grigory Kirillov <txgk@bk.ru>
+# Maintainer: Carter Li <zhangsongcui@live.cn>
+pkgname=yyjson
+pkgver=0.9.0
+pkgrel=0
+pkgdesc="High performance JSON library written in ANSI C"
+url="https://github.com/ibireme/yyjson"
+arch="all"
+license="MIT"
+makedepends="cmake samurai"
+subpackages="$pkgname-static $pkgname-dev $pkgname-doc"
+source="https://github.com/ibireme/yyjson/archive/$pkgver/yyjson-$pkgver.tar.gz"
+
+build() {
+	cmake -B builddir -G Ninja \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_BUILD_TYPE=MinSizeRel \
+		-DBUILD_SHARED_LIBS=ON \
+		-DYYJSON_BUILD_TESTS="$(want_check && echo ON || echo OFF)"
+	cmake -B builddir-static -G Ninja \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_BUILD_TYPE=MinSizeRel
+	cmake --build builddir
+	cmake --build builddir-static
+}
+
+check() {
+	ctest --output-on-failure --test-dir builddir
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install builddir
+	DESTDIR="$pkgdir" cmake --install builddir-static
+	for file in README.md doc/API.md doc/BuildAndTest.md doc/DataStructure.md; do
+		install -Dm644 "$file" -t "$pkgdir"/usr/share/doc/"$pkgname"
+	done
+}
+
+sha512sums="
+4b9ca85096ccfe2f513a5869eb63b175f44c67785940e02414f6a586d7dd7b772fed77a1775d9416a5f1bf17f20e18a31f0dc4e65be263019d9b95bf95366219  yyjson-0.9.0.tar.gz
+"

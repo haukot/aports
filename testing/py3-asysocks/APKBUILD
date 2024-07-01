@@ -1,0 +1,38 @@
+# Contributor: Jonas <3426-spameier@users.gitlab.alpinelinux.org>
+# Maintainer: Jonas <3426-spameier@users.gitlab.alpinelinux.org>
+pkgname=py3-asysocks
+_pyname="asysocks"
+pkgver=0.2.12
+pkgrel=1
+pkgdesc="Socks5 / Socks4 client and server library"
+url="https://github.com/skelsec/asysocks"
+arch="noarch"
+license="MIT"
+depends="
+	py3-asn1crypto
+	py3-cryptography
+	py3-h11
+	"
+makedepends="
+	py3-gpep517
+	py3-wheel
+	py3-setuptools
+	"
+subpackages="$pkgname-pyc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/skelsec/asysocks/archive/refs/tags/$pkgver.tar.gz"
+builddir="$srcdir/$_pyname-$pkgver"
+options="!check" # no tests provided
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" .dist/*.whl
+}
+
+sha512sums="
+9aa67b2d8548737e0bddecd54a0d01bbfe2dedac40f90dc3be08d26b259a8994b8f4f1ab1bacf783e7a87271d8c568fc71eeb46bcbced829cc7ae0b1b4f7e53f  py3-asysocks-0.2.12.tar.gz
+"

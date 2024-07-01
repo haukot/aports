@@ -1,0 +1,26 @@
+# Maintainer: Natanael Copa <ncopa@alpinelinux.org>
+pkgname=easy-rsa
+pkgver=3.2.0
+pkgrel=0
+pkgdesc="Simple shell based CA utility"
+url="https://github.com/OpenVPN/easy-rsa"
+arch="noarch"
+license="GPL-2.0-only"
+depends="openssl"
+subpackages="$pkgname-doc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/OpenVPN/easy-rsa/archive/v$pkgver.tar.gz"
+
+package() {
+	mkdir -p "$pkgdir"/usr/share/easy-rsa \
+		"$pkgdir"/usr/share/doc/easy-rsa
+	cp -rp easyrsa3/* "$pkgdir"/usr/share/easy-rsa/ \
+		&& cp -rp doc/* "$pkgdir"/usr/share/doc/easy-rsa/
+}
+
+check() {
+	./easyrsa3/easyrsa help
+}
+
+sha512sums="
+410453cd170400fafa85547a49a2b4072683bd8c33fba64f81506cb571cd9da8c4c13d13108120c55541aabfe5ceaf3fd491d8f7105c5cc4e4082505777e8282  easy-rsa-3.2.0.tar.gz
+"

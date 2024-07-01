@@ -1,0 +1,87 @@
+# Contributor: Chris Kruger <alpine@krugerheavyindustries.com>
+# Contributor: Fabricio Silva <hi@fabricio.dev>
+# Maintainer: Fabricio Silva <hi@fabricio.dev>
+pkgname=vaultwarden
+pkgver=1.30.5
+pkgrel=2
+pkgdesc="bitwarden alternative backend"
+_bw_web_ver=2024.1.2b
+provides="bitwarden_rs=$pkgver-r$pkgrel"
+replaces="bitwarden_rs"
+url="https://github.com/dani-garcia/vaultwarden"
+arch="all !ppc64le !s390x !riscv64" # ring crate has platform specific asm - no ppc support, no rust on s390x
+license="AGPL-3.0-only"
+makedepends="
+	cargo
+	cargo-auditable
+	libpq-dev
+	mariadb-dev
+	mimalloc2-dev
+	openssl-dev
+	sqlite-dev
+	"
+subpackages="$pkgname-web-vault::noarch $pkgname-doc $pkgname-openrc"
+install="$pkgname.pre-install $pkgname.post-upgrade"
+pkgusers="vaultwarden"
+pkggroups="vaultwarden"
+source="$pkgname-$pkgver.tar.gz::https://github.com/dani-garcia/vaultwarden/archive/$pkgver.tar.gz
+	$pkgname-webvault-$_bw_web_ver.tar.gz::https://github.com/dani-garcia/bw_web_builds/releases/download/v$_bw_web_ver/bw_web_v$_bw_web_ver.tar.gz
+	cargo-update.patch
+	$pkgname.initd
+	$pkgname.confd"
+
+prepare() {
+	default_prepare
+
+	mkdir -p .cargo
+
+	local target="$(rustc -vV | sed -n 's/host: //p')"
+
+	# Build against system-provided mimalloc.
+	cat >> .cargo/config.toml <<-EOF
+		[target.$target]
+		mimalloc = { rustc-link-lib = ["mimalloc"] }
+	EOF
+
+	cargo fetch --target="$CTARGET" --locked
+}
+
+build() {
+	export VW_VERSION=$pkgver-r$pkgrel
+	cargo auditable build --release --features sqlite,postgresql,mysql,enable_mimalloc --frozen
+}
+
+check() {
+	cargo test --release --features sqlite,postgresql,mysql,enable_mimalloc --frozen
+}
+
+package() {
+	install -Dm755 target/release/vaultwarden -t "$pkgdir"/usr/bin/
+	install -d -m750 -o vaultwarden -g vaultwarden "$pkgdir"/var/lib/vaultwarden "$pkgdir"/var/log/vaultwarden
+	(cd "$srcdir"/web-vault; find . -type f -exec \
+		install -Dm644 {} "$pkgdir"/usr/share/webapps/vaultwarden-web/{} \;)
+	(cd "$builddir"/src/static; find . -type f -exec \
+		install -Dm644 {} "$pkgdir"/usr/share/webapps/vaultwarden-web/{} \;)
+
+	install -Dm644 README.md "$pkgdir"/usr/share/doc/vaultwarden/README.md
+	install -Dm755 "$srcdir"/$pkgname.initd "$pkgdir"/etc/init.d/$pkgname
+	install -Dm655 "$srcdir"/$pkgname.confd "$pkgdir"/etc/conf.d/$pkgname
+}
+
+vault() {
+	pkgdesc="$pkgdesc (web ui)"
+
+	amove usr/share/webapps
+
+	# move templates back
+	mkdir -p "$pkgdir"/usr/share/webapps/vaultwarden-web
+	mv "$subpkgdir"/usr/share/webapps/vaultwarden-web/templates "$pkgdir"/usr/share/webapps/vaultwarden-web/
+}
+
+sha512sums="
+acf7c344840f9b19e3aa366dae794ca6daca9dfad10d2bfdfa08d195d00f553643b46f2f7fe9344d0949306f9dc892722af7aeb7a047986edc98b51ec0c143bb  vaultwarden-1.30.5.tar.gz
+0157c751f5869de261c93624a1fa168a96e86ad1a169727bee428bb9d804b8bfac3d7b8e4b993e2e5d2414ee99a016702eb750d81c3cc71c9e4c659a5ff7b37f  vaultwarden-webvault-2024.1.2b.tar.gz
+0c401edb4f826f957a8ab238fc5e3e29d6a89cab0b7347f9fe11ca9834120fbc86eec3f4e2fd0ca0e8772b69e82eb63bacbb2a54aeac07893921230b13e706f6  cargo-update.patch
+a407bf26f78b74f0d907c4cde1fca8ff00c3ba22093397ace903c8648c03bd943a064b1756337cf82e8aeb5e4617640fefd46565420e8812c6e0fc7392f6be5b  vaultwarden.initd
+e59370b2971904a86b373257e728dfe1ddc384ae9c175fff7cdcfb2fd91f0e52b6d68428269afb41b785f04a532f6534c5e3ec5bfd0cabe77be950c458dc1b52  vaultwarden.confd
+"

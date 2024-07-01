@@ -1,0 +1,48 @@
+# Contributor: Michał Polański <michal@polanski.me>
+# Maintainer: Michał Polański <michal@polanski.me>
+pkgname=syft
+pkgver=1.4.1
+pkgrel=1
+pkgdesc="Generate a Software Bill of Materials (SBOM) from container images and filesystems"
+url="https://github.com/anchore/syft"
+license="Apache-2.0"
+arch="all !armhf !armv7 !x86 !ppc64le !riscv64" # FTBFS on 32-bit arches, riscv64, ppc64le
+makedepends="go"
+subpackages="
+	$pkgname-bash-completion
+	$pkgname-fish-completion
+	$pkgname-zsh-completion
+	"
+source="https://github.com/anchore/syft/archive/v$pkgver/syft-$pkgver.tar.gz"
+options="!check" # tests need docker
+
+export GOCACHE="${GOCACHE:-"$srcdir/go-cache"}"
+export GOTMPDIR="${GOTMPDIR:-"$srcdir"}"
+export GOMODCACHE="${GOMODCACHE:-"$srcdir/go"}"
+
+build() {
+	go build -ldflags "
+		-X main.version=$pkgver
+		" \
+		-o bin/syft ./cmd/syft
+
+	bin/syft completion bash > $pkgname.bash
+	bin/syft completion fish > $pkgname.fish
+	bin/syft completion zsh > $pkgname.zsh
+}
+
+check() {
+	go test ./...
+}
+
+package() {
+	install -Dm755 bin/syft -t "$pkgdir"/usr/bin/
+
+	install -Dm644 $pkgname.bash "$pkgdir"/usr/share/bash-completion/completions/$pkgname
+	install -Dm644 $pkgname.fish "$pkgdir"/usr/share/fish/vendor_completions.d/$pkgname.fish
+	install -Dm644 $pkgname.zsh "$pkgdir"/usr/share/zsh/site-functions/_$pkgname
+}
+
+sha512sums="
+df2416051fb2f25d99d45f4de41029bf7956c9df70e97e194d4cc090d54c1f831ebc6dfa1699b7c69f14fce4e2a121c91b0894304243e3f4ce84ee5133d2dbb7  syft-1.4.1.tar.gz
+"

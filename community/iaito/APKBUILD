@@ -1,0 +1,38 @@
+# Maintainer: omni <omni+alpine@hack.org>
+pkgname=iaito
+pkgver=5.9.2
+pkgrel=0
+pkgdesc="Official QT frontend of radare2"
+url="https://www.radare.org/n/iaito.html"
+license="GPL-3.0-only"
+arch="all"
+depends="radare2
+	graphviz
+	qt5-qtsvg
+	"
+makedepends="radare2-dev
+	bash
+	qt5-qtsvg-dev
+	qt5-qtbase-dev
+	qt5-qttools-dev
+	"
+subpackages="$pkgname-doc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/radareorg/iaito/archive/refs/tags/$pkgver.tar.gz"
+options="!check" # no testsuite
+
+build() {
+	./configure \
+		--build=$CBUILD \
+		--target=$CTARGET \
+		--prefix=/usr \
+		--sysconfdir=/etc
+	make
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+}
+
+sha512sums="
+e9856f6a63e739fcb8765b588b1e2679d8ce354aba412e04366f776a47b20e3cd6704606cbfeb725f2d87bfdec386931e61111d510aff99e6c45ff20927a6530  iaito-5.9.2.tar.gz
+"

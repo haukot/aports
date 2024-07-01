@@ -1,0 +1,36 @@
+# Contributor: omni <omni+alpine@hack.org>
+# Maintainer: omni <omni+alpine@hack.org>
+pkgname=snowflake
+pkgver=2.9.2
+pkgrel=3
+pkgdesc="Pluggable Transport for Tor using WebRTC, inspired by Flashproxy"
+url="https://snowflake.torproject.org/"
+license="BSD-3-Clause"
+arch="all !riscv64" # ftbfs
+makedepends="go"
+options="!check" # no test files
+subpackages="$pkgname-doc"
+source="https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake/-/archive/v$pkgver/snowflake-v$pkgver.tar.gz"
+builddir="$srcdir/$pkgname-v$pkgver"
+
+export GOCACHE="${GOCACHE:-"$srcdir/go-cache"}"
+export GOTMPDIR="${GOTMPDIR:-"$srcdir"}"
+export GOMODCACHE="${GOMODCACHE:-"$srcdir/go"}"
+
+build() {
+	cd "$builddir"/client
+	go build -v .
+
+	cd "$builddir"/proxy
+	go build -v .
+}
+
+package() {
+	install -Dm0755 client/client "$pkgdir"/usr/bin/"$pkgname"-client
+	install -Dm0755 proxy/proxy "$pkgdir"/usr/bin/"$pkgname"-proxy
+	install -Dm0644 doc/snowflake-*.1 -t "$pkgdir"/usr/share/man/man1
+}
+
+sha512sums="
+bfae8be9f7696c5a77129b49e3f874b32ddb62ba82becaa805a9ad94c85b90494baab084f8df133e8d8bbdc21b2285d91df0f72ce1c988632a778ccbf77d1793  snowflake-v2.9.2.tar.gz
+"

@@ -1,0 +1,51 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: team/kde <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=kde-applications
+pkgname=kcalc
+pkgver=24.05.1
+pkgrel=0
+# armhf blocked by extra-cmake-modules
+arch="all !armhf"
+url="https://kde.org/applications/utilities/org.kde.kcalc"
+pkgdesc="Scientific Calculator"
+license="GPL-2.0-or-later"
+makedepends="
+	extra-cmake-modules
+	gmp-dev
+	kconfig-dev
+	kconfigwidgets-dev
+	kcrash-dev
+	kdoctools-dev
+	kguiaddons-dev
+	ki18n-dev
+	knotifications-dev
+	kxmlgui-dev
+	mpfr-dev
+	qt6-qtbase-dev
+	samurai
+	"
+subpackages="$pkgname-doc $pkgname-lang"
+_repo_url="https://invent.kde.org/utilities/kcalc.git"
+source="https://download.kde.org/stable/release-service/$pkgver/src/kcalc-$pkgver.tar.xz"
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib
+	cmake --build build
+}
+
+check() {
+	ctest --test-dir build --output-on-failure
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+3ffada47d8775a34add8333500dd84b83d54761037f1127e0d6a34a659eb17fd17407ded6118a2a43d26a419b58f9e753f51a018a067f62fc23725bf538905e7  kcalc-24.05.1.tar.xz
+"

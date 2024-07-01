@@ -1,0 +1,57 @@
+# Contributor: Jakob Meier <comcloudway@ccw.icu>
+# Maintainer: Jakob Meier <comcloudway@ccw.icu>
+pkgname=rnote
+pkgver=0.10.2
+pkgrel=0
+pkgdesc="Sketch and take handwritten notes."
+url="https://rnote.flxzt.net/"
+# ppc64le: vendored abseil, not possible to override to system
+# armhf: doesn't build
+# s390x: mainframe
+arch="all !armhf !s390x !ppc64le"
+license="GPL-3.0-or-later"
+makedepends="
+	alsa-lib-dev
+	appstream-glib-dev
+	appstream-dev
+	cargo
+	clang-dev
+	cmake
+	desktop-file-utils
+	gtk4.0-dev
+	libadwaita-dev
+	meson
+	poppler-dev
+	"
+subpackages="$pkgname-lang $pkgname-cli:cli"
+source="
+	https://github.com/flxzt/rnote/archive/refs/tags/v$pkgver/rnote-$pkgver.tar.gz
+"
+options="net"
+
+export CARGO_PROFILE_RELEASE_LTO=thin
+
+build() {
+	abuild-meson \
+		. output
+
+	meson configure -Dcli=true output
+	meson compile -C output
+}
+check() {
+	meson test --no-rebuild --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+cli() {
+	pkgdesc="Convert files to and from .rnote"
+
+	amove usr/bin/rnote-cli
+}
+
+sha512sums="
+27aa48f8dafca39fc5a024962ad9cccb6191c72bfcc828283b5541326f6ce8c56b0be3ebad7795a9ab71cbea8e38dab2ea42d70e0b97dd3b2c14f8fcb84ef260  rnote-0.10.2.tar.gz
+"

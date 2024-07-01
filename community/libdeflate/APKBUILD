@@ -1,0 +1,50 @@
+# Contributor: Holger Jaekel <holger.jaekel@gmx.de>
+# Maintainer: Holger Jaekel <holger.jaekel@gmx.de>
+pkgname=libdeflate
+pkgver=1.20
+pkgrel=0
+pkgdesc="Library for fast, whole-buffer DEFLATE-based compression and decompression"
+url="https://github.com/ebiggers/libdeflate"
+arch="all"
+license="MIT"
+makedepends="
+	cmake
+	samurai
+	"
+checkdepends="
+	zlib-dev
+	"
+subpackages="
+	$pkgname-static
+	$pkgname-dev
+	$pkgname-utils
+	"
+source="
+	$pkgname-$pkgver.tar.gz::https://github.com/ebiggers/libdeflate/archive/refs/tags/v$pkgver.tar.gz
+	"
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DLIBDEFLATE_BUILD_TESTS="$(want_check && echo ON || echo OFF)" \
+		-DLIBDEFLATE_USE_SHARED_LIB=ON
+	cmake --build build
+}
+
+check() {
+	ctest --test-dir build --output-on-failure -j 4
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+utils() {
+	pkgdesc="Command line utilities for the DEFLATE library"
+	amove /usr/bin
+}
+
+sha512sums="
+5ebe6af9ce81872cba508d1f0aa087ddeb0e0f0c8e6360da66b8a9db2a76203dafbf3d3f6b3b791618ea9c6d0231fab5b4a55badb31a4480fb4174b9445c658b  libdeflate-1.20.tar.gz
+"

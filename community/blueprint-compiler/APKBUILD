@@ -1,0 +1,40 @@
+# Contributor: Newbyte <newbie13xd@gmail.com>
+# Maintainer: Newbyte <newbie13xd@gmail.com>
+pkgname=blueprint-compiler
+pkgver=0.12.0
+pkgrel=1
+pkgdesc="Markup language for GTK user interfaces"
+url="https://jwestman.pages.gitlab.gnome.org/blueprint-compiler"
+arch="noarch"
+license="LGPL-3.0-or-later"
+depends="
+	gobject-introspection-dev
+	gtk4.0
+	libadwaita
+	python3
+	py3-gobject3
+	"
+depends_dev="$pkgname=$pkgver-r$pkgrel"
+makedepends="meson"
+checkdepends="cage-run"
+subpackages="$pkgname-dev $pkgname-pyc"
+source="https://gitlab.gnome.org/jwestman/blueprint-compiler/-/archive/v$pkgver/blueprint-compiler-v$pkgver.tar.gz"
+builddir="$srcdir/$pkgname-v$pkgver"
+
+build() {
+	abuild-meson . output
+	meson compile -C output
+}
+
+check() {
+	cage-run meson test --no-rebuild --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+	python3 -m compileall -fq "$pkgdir"/usr/lib/python*
+}
+
+sha512sums="
+b9f5e43a34b08bb2708d39e8820e7fe2274bdca3e0e14d290f6c872e070b7f9559c6315579b24da80e7a9115bb64da7d986abc5d520644ce3bedc82fa0a1b4c9  blueprint-compiler-v0.12.0.tar.gz
+"

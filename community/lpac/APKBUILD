@@ -1,0 +1,41 @@
+# Contributor: Luca Weiss <luca@lucaweiss.eu>
+# Maintainer: Luca Weiss <luca@lucaweiss.eu>
+pkgname=lpac
+pkgver=2.0.2
+pkgrel=2
+pkgdesc="C-based eUICC LPA"
+url="https://github.com/estkme-group/lpac"
+# x86: textrels
+arch="all !x86"
+license="AGPL-3.0-only AND LGPL-2.0-only AND MIT"
+makedepends="
+	cmake
+	curl-dev
+	libqmi-dev
+	pcsc-lite-dev
+	samurai
+	"
+subpackages="$pkgname-dbg"
+source="$pkgname-$pkgver.tar.gz::https://github.com/estkme-group/lpac/archive/refs/tags/v$pkgver.tar.gz"
+options="!check" # no tests
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_SHARED_LIBS=ON \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_RPATH=/usr/lib/lpac \
+		-DLPAC_WITH_APDU_PCSC=ON \
+		-DLPAC_WITH_APDU_AT=ON \
+		-DLPAC_WITH_APDU_QMI_QRTR=ON
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+63b00f29dc6437691a23ff2c3f9762919f0754c7a34d8208f30c9a6a73433f5c9b3c3a461917415e474bf3dacf30e809ab6df3b9c6ca27b404f819647dd8398e  lpac-2.0.2.tar.gz
+"

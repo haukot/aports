@@ -1,0 +1,32 @@
+# Contributor: Duncan Bellamy <dunk@denkimushi.com>
+# Maintainer: Duncan Bellamy <dunk@denkimushi.com>
+pkgname=py3-jaraco.packaging
+pkgver=10.1.0
+pkgrel=0
+pkgdesc="tools to supplement packaging Python releases"
+url="https://github.com/jaraco/jaraco.packaging"
+arch="noarch"
+license="MIT"
+# missing test deps
+options="!check"
+depends="py3-build py3-jaraco.context"
+makedepends="py3-gpep517 py3-installer py3-setuptools_scm py3-wheel"
+subpackages="$pkgname-pyc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/jaraco/jaraco.packaging/archive/refs/tags/v$pkgver.tar.gz"
+builddir="$srcdir/jaraco.packaging-$pkgver"
+
+build() {
+	export SETUPTOOLS_SCM_PRETEND_VERSION=$pkgver
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/*.whl
+}
+
+sha512sums="
+5e237ad9d40b0188c5d6c921f159b630c4cf95874583e07a6bda69237bd07e0d329090434526e627dbb701068dfc06f764c93c49ecc3cd2e2602ee7b4b6e02ee  py3-jaraco.packaging-10.1.0.tar.gz
+"

@@ -1,0 +1,37 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Natanael Copa <ncopa@alpinelinux.org>
+pkgname=gnome-chess
+pkgver=46.0
+pkgrel=0
+arch="all"
+url="https://wiki.gnome.org/Apps/Chess"
+pkgdesc="Play the classic two-player boardgame of chess"
+license="GPL-3.0-or-later"
+makedepends="
+	desktop-file-utils
+	gtk4.0-dev
+	itstool
+	libadwaita-dev
+	librsvg-dev
+	meson
+	vala
+	"
+source="https://download.gnome.org/sources/gnome-chess/${pkgver%.*}/gnome-chess-$pkgver.tar.xz"
+subpackages="$pkgname-doc $pkgname-lang"
+
+build() {
+	abuild-meson -Db_lto=true . output
+	meson compile -C output
+}
+
+check() {
+	meson test --no-rebuild --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="
+e605b9750fdc77a0d2b6973f127fb2cf5fadb15080add728c80a8be5ce02035ff6cadb0351751a0612f09632602fe532405d62c68828fd0ec4bf83b9bd11301a  gnome-chess-46.0.tar.xz
+"

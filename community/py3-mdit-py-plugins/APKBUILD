@@ -1,0 +1,35 @@
+# Contributor: Patrycja Rosa <alpine@ptrcnull.me>
+# Maintainer: Patrycja Rosa <alpine@ptrcnull.me>
+pkgname=py3-mdit-py-plugins
+pkgver=0.4.1
+pkgrel=0
+pkgdesc="Collection of core plugins for markdown-it-py"
+url="https://mdit-py-plugins.readthedocs.io/"
+arch="noarch"
+license="MIT"
+depends="python3 py3-markdown-it-py"
+makedepends="py3-gpep517 py3-flit-core py3-installer"
+checkdepends="py3-pytest"
+subpackages="$pkgname-pyc"
+source="https://github.com/executablebooks/mdit-py-plugins/archive/v$pkgver/py3-mdit-py-plugins-$pkgver.tar.gz"
+builddir="$srcdir/mdit-py-plugins-$pkgver"
+options="!check" # needs py3-pytest-regressions
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	pytest
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/mdit_py_plugins-*.whl
+}
+
+sha512sums="
+d2f5c59bf2a17ce441de18f815624cb6f61202f111176c5f1c7745e430d59e8690ce8a5f9da2402bd34dcc5cf4dc38377990df649fbf3256216bc82cdfc6333a  py3-mdit-py-plugins-0.4.1.tar.gz
+"

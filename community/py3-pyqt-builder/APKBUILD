@@ -1,0 +1,34 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=py3-pyqt-builder
+pkgver=1.16.2
+pkgrel=0
+pkgdesc="The PEP 517 compliant PyQt build system"
+url="https://www.riverbankcomputing.com/software/pyqt-builder/"
+arch="noarch"
+license="custom:sip"
+makedepends="
+	py3-gpep517
+	py3-setuptools
+	py3-wheel
+	"
+checkdepends="py3-pytest"
+subpackages="$pkgname-pyc"
+source="https://pypi.python.org/packages/source/P/PyQt-builder/pyqt_builder-$pkgver.tar.gz"
+options="!check" # No tests
+builddir="$srcdir/pyqt_builder-$pkgver"
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/PyQt_*.whl
+}
+
+sha512sums="
+64fc969799a12a176eb730fdc4581f18293dceb8edff20db0177ce409fe7e712cdfb07449b6c4abdd33f1fd9aabe8bee248fe9aeb5373df533d805f9d2a0c6a5  pyqt_builder-1.16.2.tar.gz
+"

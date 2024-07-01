@@ -1,0 +1,100 @@
+# Contributor: Marian Buschsieweke <marian.buschsieweke@posteo.net>
+# Maintainer: Marian Buschsieweke <marian.buschsieweke@posteo.net>
+pkgname=gnuradio
+pkgver=3.10.9.2
+pkgrel=7
+pkgdesc="General purpose DSP and SDR toolkit"
+url="https://www.gnuradio.org"
+# libvolk only supports armv7, aarch64, x86_64.
+arch="armv7 aarch64 x86_64"
+license="GPL-3.0-or-later"
+depends="
+	py3-cairo
+	py3-click
+	py3-click-plugins
+	py3-gobject3
+	py3-mako
+	py3-numpy
+	py3-qtgraph
+	py3-qt5
+	py3-scipy
+	py3-yaml
+	"
+depends_dev="
+	blas-dev
+	boost-dev
+	fftw-dev
+	gmp-dev
+	gsl-dev
+	gsm-dev
+	gtk+3.0-dev
+	libsndfile-dev
+	mpir-dev
+	portaudio-dev
+	py3-numpy-dev
+	py3-pybind11-dev
+	py3-sphinx
+	python3-dev
+	qt5-qtbase-dev
+	qwt-dev
+	soapy-sdr-dev
+	spdlog-dev
+	thrift-dev
+	uhd-dev
+	zeromq-dev
+	"
+makedepends="
+	$depends_dev
+	cmake
+	doxygen
+	graphviz
+	libvolk-dev
+	samurai
+	"
+checkdepends="xvfb-run"
+subpackages="$pkgname-doc $pkgname-dev"
+source="
+	$pkgname-$pkgver.tar.gz::https://github.com/gnuradio/gnuradio/archive/v$pkgver.tar.gz
+	$pkgname-remove-empty-testcase.patch::https://github.com/gnuradio/gnuradio/commit/21df5288871ffdbc02575b5931b38f7d23c6ff87.patch
+	"
+
+build() {
+	# inlining failed in call to 'always_inline' 'vsnprintf':
+	# function body can be overwritten at link time
+	export CXXFLAGS="$CXXFLAGS -flto=auto -U_FORTIFY_SOURCE"
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DENABLE_GRC=ON \
+		-DENABLE_GR_QTGUI=ON \
+		-DENABLE_PYTHON=ON \
+		-Wno-dev
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+check() {
+	# remove failing tests
+	case "$CARCH" in
+	x86_64)
+		sed -i build/gr-blocks/python/blocks/CTestTestfile.cmake \
+			-e '/add_test(qa_rotator_cc /d'
+		;;
+	esac
+	# module 'PyQt5.Qt' has no attribute 'QValidator'
+	sed -i build/gr-qtgui/python/qtgui/CTestTestfile.cmake \
+		-e '/add_test(qa_qtgui /d'
+	# filter_qa_fir_filter_with_buffer.cc: failing GLIBCXX assertion
+	# needs pygccxml
+	timeout 600 \
+		xvfb-run -a ctest -E '(test_modtool|qa_throttle|qa_uncaught_exception|filter_qa_fir_filter_with_buffer.cc)' --output-on-failure --test-dir build
+}
+
+sha512sums="
+5eca8dd21def7354ab8bd3b98a5780f80bc71b0dd8f556a50def157964e121c7ba6a8a8dc96584f6b15a6b2d7e0391fe77f5c72ba31c1c5b49a76306dd6f78cd  gnuradio-3.10.9.2.tar.gz
+aa9a676c004f07c0dd3efe4a858ba07ce94d760724fdaae90f5b7744e0a711d2f890d5d3d5dce1a2061a6ede5af33240150d9121094fa8d3fc125c1470c9f54c  gnuradio-remove-empty-testcase.patch
+"

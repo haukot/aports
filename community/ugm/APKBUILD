@@ -1,0 +1,32 @@
+# Contributor: omni <omni+alpine@hack.org>
+# Maintainer: omni <omni+alpine@hack.org>
+pkgname=ugm
+pkgver=1.5.0
+pkgrel=1
+pkgdesc="A terminal based UNIX user and group browser"
+url="https://github.com/ariasmn/ugm"
+license="MIT"
+arch="all"
+makedepends="go"
+options="!check" # no test files
+source="$pkgname-$pkgver.tar.gz::https://github.com/ariasmn/ugm/archive/refs/tags/v$pkgver.tar.gz"
+
+export GOFLAGS="$GOFLAGS -trimpath -mod=readonly -modcacherw"
+export GOCACHE="${GOCACHE:-"$srcdir/go-cache"}"
+export GOTMPDIR="${GOTMPDIR:-"$srcdir"}"
+export GOMODCACHE="${GOMODCACHE:-"$srcdir/go"}"
+
+build() {
+	go build \
+		-ldflags="-linkmode=external -extldflags \"$LDFLAGS\"" \
+		-v .
+}
+
+package() {
+	install -Dm0755 "$pkgname" -t "$pkgdir"/usr/bin
+	install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+}
+
+sha512sums="
+ddec87a0ad135d8f243fa693b64e69061b82dc4c02dfee0452119b3d06827ee86b94fdf95af71546d9066be4cabf7642a274b9b5bc4e825526b86d177aa3abd5  ugm-1.5.0.tar.gz
+"

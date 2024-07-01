@@ -1,0 +1,47 @@
+# Contributor: Fabian Affolter <fabian@affolter-engineering.ch>
+# Maintainer: Fabian Affolter <fabian@affolter-engineering.ch>
+pkgname=py3-ansi2html
+_pkgname=ansi2html
+pkgver=1.9.1
+pkgrel=1
+pkgdesc="Convert text with ANSI color codes to HTML"
+url="https://github.com/pycontribs/ansi2html"
+arch="noarch"
+license="LGPL-3.0-or-later"
+depends="python3"
+makedepends="
+	py3-gpep517
+	py3-installer
+	py3-setuptools_scm
+	py3-wheel
+	"
+checkdepends="py3-pytest"
+subpackages="$pkgname-pyc"
+source="https://files.pythonhosted.org/packages/source/${_pkgname:0:1}/$_pkgname/$_pkgname-$pkgver.tar.gz"
+builddir="$srcdir"/$_pkgname-$pkgver
+
+replaces="py-ansi2html" # for backwards compatibility
+provides="py-ansi2html=$pkgver-r$pkgrel" # for backwards compatibility
+
+export SETUPTOOLS_SCM_PRETEND_VERSION=$pkgver
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	python3 -m venv --clear --without-pip --system-site-packages .testenv
+	.testenv/bin/python3 -m installer .dist/ansi2html-$pkgver-py3-none-any.whl
+	PATH="$PATH:$PWD/.testenv/bin" .testenv/bin/python3 -m pytest
+}
+
+package() {
+	python3 -m installer --destdir "$pkgdir" \
+		.dist/ansi2html-$pkgver-py3-none-any.whl
+}
+
+sha512sums="
+1ffeffdd4f861b809c424b5b9e7d07212aaf1b5ef483a2820f128f815002628c823b5701652b0770ed182f0585052f040b55fca5db31e4690be86c49553105b3  ansi2html-1.9.1.tar.gz
+"

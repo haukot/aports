@@ -1,0 +1,50 @@
+# Contributor: Sashanoraa <sasha@noraa.gay>
+# Maintainer: Celeste <cielesti@protonmail.com>
+pkgname=stargazer-gmi
+pkgver=1.2.1
+pkgrel=0
+pkgdesc="Fast and easy to use Gemini server"
+url="https://sr.ht/~zethra/stargazer/"
+arch="all"
+license="AGPL-3.0-or-later"
+makedepends="cargo cargo-auditable scdoc"
+checkdepends="py3-cryptography"
+subpackages="
+	$pkgname-doc
+	$pkgname-openrc
+	$pkgname-bash-completion
+	$pkgname-fish-completion
+	$pkgname-zsh-completion
+	"
+source="$pkgname-$pkgver.tar.gz::https://git.sr.ht/~zethra/stargazer/archive/$pkgver.tar.gz"
+builddir="$srcdir/stargazer-$pkgver"
+options="!check" # connection refused to localhost
+
+prepare() {
+	default_prepare
+
+	cargo fetch --target="$CTARGET" --locked
+}
+
+build() {
+	CGFLAGS='--frozen --release' ./scripts/build
+}
+
+check() {
+	CARGO_ARGS='--release' ./scripts/test --skip IPv6Address,SCGIVars
+}
+
+package() {
+	DESTDIR="$pkgdir" ./scripts/install \
+		--prefix=/usr --sysconfdir=/etc \
+		--bashdir="$pkgdir"/usr/share/bash-completion/completions \
+		--zshdir="$pkgdir"/usr/share/zsh/site-functions \
+		--fishdir="$pkgdir"/usr/share/fish/vendor_completions.d
+
+	install -Dvm644 ./contrib/init/stargazer.initd \
+		"$pkgdir"/etc/init.d/stargazer
+}
+
+sha512sums="
+1eb5ed691756ecd2126421642a3fb71bdf9d7a1e8e94f8f1c5c5b23e361499aaa6a4383995ae6810dc4cba65360f4e98b9f6ed620723e67c71a44c5929a2010d  stargazer-gmi-1.2.1.tar.gz
+"

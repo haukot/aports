@@ -1,0 +1,51 @@
+# Contributor: Jeremy O'Brien <neutral@fastmail.com>
+# Maintainer: Celeste <cielesti@protonmail.com>
+pkgname=links-graphics
+pkgver=2.29
+pkgrel=1
+pkgdesc="Web browser running in both graphics and text mode"
+url="http://links.twibright.com/"
+arch="all"
+license="GPL-2.0-or-later WITH OpenSSL-Exception"
+makedepends="
+	bzip2-dev
+	jpeg-dev
+	libevent-dev
+	libpng-dev
+	openssl-dev
+	xorg-server-dev
+	zlib-dev
+	zstd-dev
+	"
+subpackages="$pkgname-doc"
+source="http://links.twibright.com/download/links-$pkgver.tar.bz2"
+builddir="$srcdir/links-$pkgver"
+options="!check"  # No test suite.
+
+provides="links"
+provider_priority=20
+
+build() {
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--localstatedir=/var \
+		--disable-javascript \
+		--enable-graphics \
+		--with-x \
+		--x-includes=/usr/include/X11/ \
+		--x-libraries=/usr/lib/xorg/ \
+		--disable-nls
+	make
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+}
+
+sha512sums="
+5ea8b2fd0eb74d9dc2b45614aef6ee878fe686dff9bcee75ac6ea01f6a7331670f7709233d31986fc64ad86ce549616a4471057837b6caf15af6d1c5c503ac75  links-2.29.tar.bz2
+"

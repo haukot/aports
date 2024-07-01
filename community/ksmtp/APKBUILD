@@ -1,0 +1,52 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: team/kde <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=kde-applications
+pkgname=ksmtp
+pkgver=24.05.1
+pkgrel=0
+pkgdesc="Job-based library to send email through an SMTP server"
+# armhf blocked by extra-cmake-modules
+arch="all !armhf"
+url="https://kontact.kde.org"
+license="LGPL-2.1-or-later"
+depends_dev="
+	cyrus-sasl-dev
+	kcoreaddons-dev
+	ki18n-dev
+	kio-dev
+	qt6-qtbase-dev
+	"
+makedepends="$depends_dev
+	doxygen
+	extra-cmake-modules
+	graphviz
+	samurai
+	"
+subpackages="$pkgname-dev $pkgname-doc $pkgname-lang"
+_repo_url="https://invent.kde.org/pim/ksmtp.git"
+source="https://download.kde.org/stable/release-service/$pkgver/src/ksmtp-$pkgver.tar.xz"
+# The single test is broken
+options="!check"
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_QCH=ON
+	cmake --build build
+}
+
+check() {
+	ctest --test-dir build --output-on-failure
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+6f2110740fe65a3194865bdb1044c0f2c7e5e77b77fb9307822c3443296778a426f9fbef15d55aacf60028ef3df92fd5c7e54750dc0e505b74f978d27d2ef5fe  ksmtp-24.05.1.tar.xz
+"

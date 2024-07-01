@@ -1,0 +1,32 @@
+# Contributor: Carlo Landmeter <clandmeter@alpinelinux.org>
+# Maintainer: Patrycja Rosa <alpine@ptrcnull.me>
+pkgname=fdupes
+pkgver=2.3.1
+pkgrel=0
+pkgdesc="identifying or deleting duplicate files residing within specified directories"
+url="https://github.com/adrianlopezroche/fdupes"
+arch="all"
+license="MIT"
+makedepends="ncurses-dev pcre2-dev sqlite-dev"
+subpackages="$pkgname-doc"
+source="https://github.com/adrianlopezroche/fdupes/releases/download/v$pkgver/fdupes-$pkgver.tar.gz"
+
+build() {
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr
+	make
+}
+
+check() {
+	make check
+}
+
+package() {
+	make DESTDIR="$pkgdir" PREFIX="/usr" install
+}
+
+sha512sums="
+366f703fc0fec0f1a3cec70409952f544474e66595e0a3f0ccd6f715e575d08c12426131d7efc129dca6f2e99495d80cd2b5dbc1a8737ce4b13a725fcf5e74dd  fdupes-2.3.1.tar.gz
+"

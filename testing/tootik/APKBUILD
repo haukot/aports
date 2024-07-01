@@ -1,0 +1,65 @@
+# Contributor: Celeste <cielesti@protonmail.com>
+# Maintainer: Celeste <cielesti@protonmail.com>
+pkgname=tootik
+pkgver=0.11.2
+pkgrel=0
+pkgdesc="Federated nanoblogging service with Gemini frontend"
+url="https://github.com/dimkr/tootik"
+arch="all"
+license="Apache-2.0"
+depends_openrc="openssl"
+makedepends="go sqlite-dev"
+install="$pkgname.pre-install"
+pkgusers="tootik"
+pkggroups="tootik"
+subpackages="$pkgname-openrc"
+source="https://github.com/dimkr/tootik/archive/refs/tags/$pkgver/tootik-$pkgver.tar.gz
+	tootik.cfg
+	tootik.initd
+	tootik.confd
+	"
+
+export GOCACHE="${GOCACHE:-"$srcdir/go-cache"}"
+export GOTMPDIR="${GOTMPDIR:-"$srcdir"}"
+export GOMODCACHE="${GOMODCACHE:-"$srcdir/go"}"
+
+export CGO_ENABLED=1
+export _GOTAGS="libsqlite3 fts5"
+
+build() {
+	local _goldflags="
+		-X github.com/dimkr/tootik/buildinfo.Version=$pkgver
+		"
+
+	go generate -v ./migrations
+	go vet -v -tags "$_GOTAGS" ./...
+	go build -v -ldflags "$_goldflags" -tags "$_GOTAGS" ./cmd/tootik
+}
+
+check() {
+	./tootik --version
+
+	# cleanup sqlite database files used by test/register_test.go
+	rm -vf /tmp/TestRegister*.sqlite3
+
+	go test -v -tags "$_GOTAGS" -timeout 30m ./...
+}
+
+package() {
+	install -Dm755 tootik -t "$pkgdir"/usr/bin/
+	install -dm750 -o tootik -g tootik "$pkgdir"/var/lib/tootik
+
+	install -dm750 -o tootik -g tootik "$pkgdir"/etc/tootik
+	install -Dm640 -o tootik -g tootik "$srcdir"/tootik.cfg \
+		-t "$pkgdir"/etc/tootik/
+
+	install -Dm755 "$srcdir"/tootik.initd "$pkgdir"/etc/init.d/tootik
+	install -Dm644 "$srcdir"/tootik.confd "$pkgdir"/etc/conf.d/tootik
+}
+
+sha512sums="
+2eb86632d116400dda8936dc28c444af12bca0ddc7b5bcea3627b48133f556f27daf3e0ad4497778a43bd5853da18d0be5a7faa304371f786e5651c165c9be12  tootik-0.11.2.tar.gz
+2e106abb178f0918a18c48039f46d8de8886a1c5457ddc735de152da75b561a9f4c4c5e89955becc3edeceea3f8e80285593183a277c9ada6122c872dfb29114  tootik.cfg
+27e2900591d93829dbde0775cffe8a6098cabb0f4366ebd059902da991229686145650a842adb2c28ccae7f9180bd80c8fd054af9e58799eeb4844a3b53ff503  tootik.initd
+11fa51d25baaeb295c80cf3e154eb1eab67f9633e23f01cc0a25c427af368746d536bff17de2153b5be925489e3f84ca5ba492a4a43c32aaf33b8c4d00d14fd6  tootik.confd
+"

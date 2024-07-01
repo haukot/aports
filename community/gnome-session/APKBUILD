@@ -1,0 +1,56 @@
+# Contributor: Rasmus Thomsen <oss@cogitri.dev>
+# Maintainer: team/gnome <ablocorrea@hotmail.com>
+pkgname=gnome-session
+pkgver=46.0
+pkgrel=0
+pkgdesc="GNOME session manager"
+url="https://gitlab.gnome.org/GNOME/gnome-session"
+arch="all"
+license="GPL-2.0-or-later"
+depends="
+	alsa-plugins-pulse
+	bash
+	dconf
+	"
+makedepends="
+	docbook-xml
+	elogind-dev
+	gnome-desktop-dev
+	gnome-settings-daemon-dev
+	gtk+3.0-dev
+	itstool
+	json-glib-dev
+	libsm-dev
+	libxml2-utils
+	libxslt
+	meson
+	upower-dev
+	xmlto
+	"
+replaces="gnome-shell"
+options="!check" #no tests
+subpackages="$pkgname-lang $pkgname-doc"
+source="https://download.gnome.org/sources/gnome-session/${pkgver%%.*}/gnome-session-$pkgver.tar.xz
+	gnome-session-bash-login.patch
+"
+
+build() {
+	abuild-meson \
+		-Db_lto=true \
+		-Dsystemduserunitdir=/DELETEME \
+		. output
+	meson compile -C output
+}
+
+check() {
+	meson test --no-rebuild --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+	rm -rf "$pkgdir"/DELETEME
+}
+sha512sums="
+2187b8ae4ac4ec728283c5dc03edba6472864a704f6c6cd7a3e962515a3925d3a8438f7f89855dd082d2c013868da81e16da280c70b0e07537c8e431301b4bd8  gnome-session-46.0.tar.xz
+b606c906d2d1b8d34cff2c5a3653ef14c0897a49cecc74c604fddd7d95c4bb181f1027c2fc259d4e3df99278e5f66cd2cc088efbc5f9925d24eb73a7805b144b  gnome-session-bash-login.patch
+"

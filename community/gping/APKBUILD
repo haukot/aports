@@ -1,0 +1,35 @@
+# Contributor: Michał Polański <michal@polanski.me>
+# Maintainer: Michał Polański <michal@polanski.me>
+pkgname=gping
+pkgver=1.16.1
+pkgrel=0
+pkgdesc="Ping, but with a graph"
+url="https://github.com/orf/gping"
+license="MIT"
+arch="all"
+makedepends="cargo cargo-auditable"
+source="https://github.com/orf/gping/archive/gping-v$pkgver/gping-$pkgver.tar.gz"
+builddir="$srcdir/gping-gping-v$pkgver"
+options="net" # fetch dependencies
+
+prepare() {
+	default_prepare
+
+	cargo fetch --target="$CTARGET" --locked
+}
+
+build() {
+	cargo auditable build --frozen --release
+}
+
+check() {
+	cargo test --frozen
+}
+
+package() {
+	install -Dm755 target/release/$pkgname -t "$pkgdir"/usr/bin/
+}
+
+sha512sums="
+848f714beb692ae859e2eb99c78671830c46f2d8775a47163d5c61d040c3d9856ec07b35c613f6c4e4edc99b71c494ee482d5bf044e83abd9f1843fea123b880  gping-1.16.1.tar.gz
+"

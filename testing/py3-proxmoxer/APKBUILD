@@ -1,0 +1,43 @@
+# Contributor: Patrycja Rosa <alpine@ptrcnull.me>
+# Maintainer: Patrycja Rosa <alpine@ptrcnull.me>
+pkgname=py3-proxmoxer
+pkgver=2.0.1
+pkgrel=3
+pkgdesc="Python wrapper for Proxmox API v2"
+url="https://github.com/proxmoxer/proxmoxer"
+arch="noarch"
+license="MIT"
+makedepends="py3-setuptools py3-gpep517 py3-wheel"
+checkdepends="
+	py3-mock
+	py3-openssh-wrapper
+	py3-paramiko
+	py3-pytest
+	py3-requests-toolbelt
+	py3-responses
+	py3-testfixtures
+	"
+subpackages="$pkgname-pyc"
+source="https://github.com/proxmoxer/proxmoxer/archive/$pkgver/proxmoxer-$pkgver.tar.gz"
+builddir="$srcdir/proxmoxer-$pkgver"
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	python3 -m venv --clear --without-pip --system-site-packages .testenv
+	gpep517 install-wheel --destdir .testenv --prefix '' .dist/*.whl
+	.testenv/bin/python3 -m pytest
+}
+
+package() {
+	gpep517 install-wheel --destdir "$pkgdir" \
+		.dist/*.whl
+}
+
+sha512sums="
+74bdf599d85aaf16cf2802a728b83c18d572ea0df46c743e221ba0019c3fb9163f5acc0288cfd0d613d3c1b5691866e77b9e6448591dfc5faacc4226eab8344e  proxmoxer-2.0.1.tar.gz
+"

@@ -1,0 +1,73 @@
+# Contributor: Peter Shkenev <santurysim@gmail.com>
+# Maintainer: Peter Shkenev <santurysim@gmail.com>
+pkgname=gajim
+pkgver=1.9.0
+pkgrel=0
+_pkgver_suffix=""
+pkgdesc="A full featured and easy to use XMPP client"
+url="https://gajim.org/"
+arch="noarch"
+license="GPL-3.0-only"
+depends="
+	dbus
+	gtk+3.0
+	gtksourceview4
+	libsoup3
+	py3-cairo
+	py3-css-parser
+	py3-emoji
+	py3-gobject3
+	py3-keyring
+	py3-nbxmpp
+	py3-omemo-dr
+	py3-openssl
+	py3-packaging
+	py3-pillow
+	py3-precis-i18n
+	py3-qrcode
+	py3-sqlalchemy
+	sqlite
+	pango
+	"
+makedepends="
+	gettext-dev
+	py3-gpep517
+	py3-setuptools
+	py3-wheel
+	python3-dev
+	"
+checkdepends="xvfb-run font-dejavu py3-pytest"
+source="
+	https://gajim.org/downloads/${pkgver:0:3}/gajim-$pkgver$_pkgver_suffix.tar.gz
+	disable-test.patch
+	"
+subpackages="$pkgname-doc $pkgname-lang $pkgname-pyc"
+
+build() {
+	./pep517build/build_metadata.py -o .dist/metadata
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	python3 -m venv --clear --without-pip --system-site-packages .testenv
+	.testenv/bin/python3 -m installer .dist/*.whl
+	xvfb-run -a .testenv/bin/python3 -m pytest #unittest discover -s test
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/*.whl
+	./pep517build/install_metadata.py .dist/metadata --prefix="$pkgdir"/usr
+}
+
+lang() {
+	pkgdesc="Languages for package $pkgname"
+	amove usr/lib/python3*/site-packages/gajim/data/locale
+}
+
+sha512sums="
+d0c77acf8ef4792a0947021b38fd2146acec2608d6e4e7ca44b74f7bf6b14634ceec595cd9fbfa0bbbbfda74240cb79febb3414534acbadd2202ad34eeb688ab  gajim-1.9.0.tar.gz
+0f1f2071186be97c0702c64c5f479d0f72130d965146d8cc6edd727685cd0b93c2110cec11703693c7d9c5bc0327ae0b587923005556994acdf64dfbe74cf016  disable-test.patch
+"

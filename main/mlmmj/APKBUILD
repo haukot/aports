@@ -1,0 +1,39 @@
+# Maintainer: Natanael Copa <ncopa@alpinelinux.org>
+pkgname=mlmmj
+pkgver=1.4.6
+pkgrel=0
+pkgdesc="Mailing list managing made joyful"
+url="http://mlmmj.org/"
+arch="all"
+license="MIT"
+subpackages="$pkgname-doc"
+install="$pkgname.pre-install"
+pkgusers="mlmmj"
+pkggroups="mlmmj"
+source="https://codeberg.org/mlmmj/mlmmj/releases/download/RELEASE_${pkgver//./_}/mlmmj-$pkgver.tar.gz"
+options="!check"
+
+prepare() {
+	default_prepare
+	update_config_sub
+}
+
+build() {
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		"$(want_check || echo --disable-tests)"
+	make
+}
+
+package() {
+	make -j1 DESTDIR="$pkgdir" install
+	install -d "$pkgdir"/usr/share/mlmmj/texts
+	cp -r listtexts/* "$pkgdir"/usr/share/mlmmj/texts/
+	install -o mlmmj -g mlmmj -d "$pkgdir"/var/spool/mlmmj
+}
+
+sha512sums="
+0d1a9f34c33b7561f5fe5722aac0a825e5d0e904057159ce16f720cbc1e185afbef15bee2e03a09025fb2b44766d16e7258a0f12f9d1b813402577e93e9226db  mlmmj-1.4.6.tar.gz
+"

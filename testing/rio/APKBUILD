@@ -1,0 +1,45 @@
+# Contributor: Nicolas Lorin <androw95220@gmail.com>
+# Maintainer: Nicolas Lorin <androw95220@gmail.com>
+pkgname=rio
+pkgver=0.1.1
+pkgrel=0
+pkgdesc="A hardware-accelerated GPU terminal emulator powered by WebGPU, focusing to run in desktops and browsers."
+url="https://raphamorim.io/rio"
+arch="all !s390x"
+license="MIT"
+# !check: no tests available
+# net: required to fetch rust dependencies
+options="!check net"
+depends="$pkgname-terminfo"
+makedepends="cargo cargo-auditable cmake expat-dev freetype-dev fontconfig-dev libxcb-dev ncurses python3"
+subpackages="$pkgname-terminfo"
+source="$pkgname-$pkgver.tar.gz::https://github.com/raphamorim/rio/archive/refs/tags/v$pkgver.tar.gz"
+
+prepare() {
+	default_prepare
+
+	cargo fetch --target="$CTARGET" --locked
+}
+
+build() {
+	cargo auditable build --release --frozen --no-default-features --features=x11,wayland
+	tic -e rio -x -o terminfo misc/rio.terminfo
+}
+
+package() {
+	install -Dm755 target/release/rio "$pkgdir"/usr/bin/rio
+	install -Dm644 terminfo/r/rio "$pkgdir"/usr/share/terminfo/r/rio
+
+	# Install desktop files
+	install -Dm644 misc/rio.desktop -t "$pkgdir"/usr/share/applications
+	install -Dm644 misc/logo.svg \
+		"$pkgdir"/usr/share/icons/hicolor/scalable/apps/rio.svg
+}
+
+terminfo() {
+	amove usr/share/terminfo
+}
+
+sha512sums="
+73af72a694d0c430d5ee5bafbc53e4686e47cee320f88a960d8820ed60be12987b35927af3253cbc4706a612d6010d4c50430fe0509f523cfa615926a2a789a7  rio-0.1.1.tar.gz
+"

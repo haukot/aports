@@ -1,0 +1,49 @@
+# Contributor: Guy Godfroy <guy.godfroy@gugod.fr>
+# Maintainer: Guy Godfroy <guy.godfroy@gugod.fr>
+pkgname=py3status
+pkgver=3.58
+pkgrel=0
+pkgdesc="Extensible i3status wrapper written in python"
+url="https://ultrabug.github.io/py3status/"
+arch="noarch"
+license="BSD-3-Clause"
+depends="py3-setuptools"
+makedepends="
+	py3-gpep517
+	py3-installer
+	py3-wheel
+	py3-hatchling
+	"
+checkdepends="py3-pytest"
+subpackages="$pkgname-doc $pkgname-pyc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/ultrabug/py3status/archive/refs/tags/$pkgver.tar.gz"
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	python3 -m venv --clear --without-pip --system-site-packages .testenv
+	.testenv/bin/python3 -m installer .dist/*.whl
+	.testenv/bin/python3 -m pytest
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/*.whl
+
+	install -Dm644 docs/*.md README.md CHANGELOG \
+		-t "$pkgdir"/usr/share/doc/$pkgname/
+	install -Dm644 docs/dev-guide/* \
+		-t "$pkgdir"/usr/share/doc/$pkgname/dev-guide/
+	install -Dm644 docs/user-guide/* \
+		-t "$pkgdir"/usr/share/doc/$pkgname/user-guide/
+	install -Dm644 LICENSE \
+		-t "$pkgdir"/usr/share/licenses/$pkgname/
+}
+
+sha512sums="
+c527dfc5028bfdd3760d1f081a8d3964e9c9cea9af8998bdb01f2b7150cbb9247cc5b32db165a0515abed788745433d0cdef99e683d3ec49122b3f2358738506  py3status-3.58.tar.gz
+"

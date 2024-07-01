@@ -1,0 +1,43 @@
+# Contributor: Francesco Colista <fcolista@alpinelinux.org>
+# Contributor: Kevin Daudt <kdaudt@alpinelinux.org>
+# Maintainer: Francesco Colista <fcolista@alpinelinux.org>
+pkgname=copyq
+_pkgname=CopyQ
+pkgver=8.0.0
+pkgrel=0
+pkgdesc="Clipboard manager with searchable and editable history"
+url="https://github.com/hluk/CopyQ"
+arch="all !armhf"
+license="GPL-3.0-or-later"
+makedepends="
+	cmake
+	extra-cmake-modules
+	knotifications-dev
+	kstatusnotifieritem-dev
+	libxfixes-dev
+	libxtst-dev
+	qt6-qtsvg-dev
+	qt6-qttools-dev
+	qt6-qtwayland-dev
+	samurai
+	"
+options="!check" # upstream does not provide check
+subpackages="$pkgname-doc $pkgname-bash-completion"
+source="$pkgname-$pkgver.tar.gz::https://github.com/hluk/$_pkgname/archive/v$pkgver.tar.gz"
+builddir="$srcdir/$_pkgname-$pkgver"
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DWITH_QT6=ON
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+d5ed5fb8973834999c2b56a0c53de407f9ee704f1d6db60645ec7bdf05fdc93fc69b2b8f6127dd812de6c32e0e3a175db56b2cd6e90da7d031b6e531197b994e  copyq-8.0.0.tar.gz
+"

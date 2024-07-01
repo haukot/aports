@@ -1,0 +1,35 @@
+# Contributor: Sodface <sod@sodface.com>
+# Maintainer: Sodface <sod@sodface.com>
+pkgname=clifm
+pkgver=1.19
+pkgrel=0
+pkgdesc="CLI file manager"
+url="https://github.com/leo-arch/clifm"
+arch="all"
+license="GPL-2.0-or-later"
+makedepends="
+	acl-dev
+	bsd-compat-headers
+	file-dev
+	gettext-tiny-dev
+	libcap-dev
+	readline-dev
+	"
+options="!check" # no test suite
+subpackages="$pkgname-doc $pkgname-bash-completion $pkgname-zsh-completion $pkgname-fish-completion"
+source="https://github.com/leo-arch/clifm/releases/download/v$pkgver/clifm-$pkgver.tar.gz
+	begin-decls.patch
+	"
+
+build() {
+	make
+}
+
+package() {
+	make PREFIX=/usr MANDIR=/usr/share/man DESTDIR="$pkgdir" install
+}
+
+sha512sums="
+35db7bb04fade492c62444ec01d7324435fa2d3166a38d8babc7e91fac60917fb364f840487e6a27d6c68990782a7764871488e08370c6f9f4cfac24805e8a18  clifm-1.19.tar.gz
+9db3b9ee57bfebd1e8d7ed3bb3a2b78499126944f4051b354095dfd4a89bfc897e9408e24695aa1748517f7facd770c7d94baaaaae9415abe1abe2468d286381  begin-decls.patch
+"

@@ -1,0 +1,33 @@
+# Contributor: Maarten van Gompel <proycon@anaproy.nl>
+# Maintainer: Maarten van Gompel <proycon@anaproy.nl>
+pkgname=ucto
+pkgver=0.33
+pkgrel=0
+pkgdesc="advanced rule-based (regular-expression) and unicode-aware tokenizer for various languages"
+arch="all"
+options="!check"
+url="https://github.com/LanguageMachines/ucto"
+license="GPL-3.0-only"
+depends="uctodata"
+makedepends="libtool libxml2-dev libfolia-dev ticcutils-dev icu-dev
+	libexttextcat-dev"
+subpackages="$pkgname-dev $pkgname-doc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/LanguageMachines/ucto/releases/download/v$pkgver/ucto-$pkgver.tar.gz"
+
+build() {
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--localstatedir=/var
+	make
+}
+
+package() {
+	make DESTDIR=$pkgdir install
+}
+
+sha512sums="
+0cd9aa4e423cfa71818f817e21ca59c5b533bf462b026c96d1c90ec5dc034a690898929e6d8a86c424b19491d2f20ed703d16fd565cec6df935265345d75c8f7  ucto-0.33.tar.gz
+"

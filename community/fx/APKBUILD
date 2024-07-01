@@ -1,0 +1,33 @@
+# Contributor: tetsumaki <yd-alpine@tetsumaki.net>
+# Maintainer: tetsumaki <yd-alpine@tetsumaki.net>
+pkgname=fx
+pkgver=34.0.0
+pkgrel=3
+pkgdesc="Command-line tool and terminal JSON viewer"
+url="https://github.com/antonmedv/fx"
+arch="all"
+license="MIT"
+makedepends="go"
+subpackages="$pkgname-doc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/antonmedv/fx/archive/refs/tags/$pkgver.tar.gz"
+
+export GOCACHE="${GOCACHE:-"$srcdir/go-cache"}"
+export GOTMPDIR="${GOTMPDIR:-"$srcdir"}"
+export GOMODCACHE="${GOMODCACHE:-"$srcdir/go"}"
+
+build() {
+	go build .
+}
+
+check() {
+	go test ./...
+}
+
+package() {
+	install -Dm0755 -t "$pkgdir"/usr/bin/ fx
+	install -Dm0644 -t "$pkgdir"/usr/share/licenses/$pkgname/ LICENSE
+}
+
+sha512sums="
+7b9a384f13611128c0b963ae828043c7b416f6db5a9b13d2bc875024923fdd949179d0423c224ce3cdbfef7527d431e6d5b9c993459f474906f287469ca51984  fx-34.0.0.tar.gz
+"

@@ -1,0 +1,46 @@
+# Maintainer: Simon Zeni <simon@bl4ckb0ne.ca>
+# Contributor: Fabricio Silva <hi@fabricio.dev>
+pkgname=jellyfin
+pkgver=10.9.6
+pkgrel=0
+pkgdesc="The Free Software Media System"
+install="$pkgname.pre-install"
+url="https://jellyfin.org/"
+arch="x86_64 armv7 aarch64"
+license="GPL-2.0-only"
+makedepends="dotnet8-sdk"
+depends="aspnetcore8-runtime ffmpeg"
+subpackages="$pkgname-openrc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/jellyfin/jellyfin/archive/refs/tags/v$pkgver.tar.gz
+	$pkgname.initd
+	$pkgname.confd"
+
+build() {
+	dotnet publish Jellyfin.Server \
+		--configuration Release \
+		--no-self-contained \
+		--use-current-runtime \
+		--output publish
+}
+
+check() {
+	dotnet test --no-restore
+}
+
+package() {
+	mkdir -p "$pkgdir"/usr/lib "$pkgdir"/usr/bin
+
+	cp -a publish "$pkgdir"/usr/lib/jellyfin
+	ln -s ../lib/jellyfin/jellyfin "$pkgdir"/usr/bin/jellyfin
+
+	install -Dm755 "$srcdir"/$pkgname.initd \
+		"$pkgdir"/etc/init.d/$pkgname
+	install -Dm644 "$srcdir"/$pkgname.confd \
+		"$pkgdir"/etc/conf.d/$pkgname
+}
+
+sha512sums="
+5f8805b7ef5b71a88f01d3676b3895fe3b7e55ac4d695da54ba74d83844465411b1304f5c6025a68aa19cd1f463d2527d89d1ebf8ecb30677542ee486bcc76c2  jellyfin-10.9.6.tar.gz
+c1df7a3ec618e4df042c5491926bd259cbeaaee53a2313338b7318935a5f492db3cdc97518cad679cfb13ebced79882417fe697896c27741446c275c2bd3e460  jellyfin.initd
+53bd2ab90cd2023765f763cf66cfd09ccc641508cad9339dedc07275afc8a4e39b8c992ec14c082b0396abdfdf63bab388567bb9c4e2bc5e477e714cc1ab9607  jellyfin.confd
+"

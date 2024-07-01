@@ -1,0 +1,49 @@
+# Contributor: Rasmus Thomsen <oss@cogitri.dev>
+# Maintainer: team/gnome <ablocorrea@hotmail.com>
+pkgname=gnome-disk-utility
+pkgver=46.0
+pkgrel=0
+pkgdesc="GNOME libraries and applications for dealing with storage devices"
+url="https://wiki.gnome.org/Apps/Disks"
+arch="all"
+license="GPL-2.0-or-later"
+# Uses udisks_client that calls dbus /org/freedesktop/UDisks2/Manager
+depends="
+	dosfstools
+	gptfdisk
+	parted
+	udisks2
+	wipefs
+	"
+makedepends="
+	desktop-file-utils
+	elogind-dev
+	glib-dev
+	gnome-settings-daemon-dev
+	libcanberra-dev
+	libdvdread-dev
+	libhandy1-dev
+	libnotify-dev
+	libpwquality-dev
+	libsecret-dev
+	libxslt-dev
+	meson
+	udisks2-dev
+	xz-dev
+	"
+options="!check" # no tests
+subpackages="$pkgname-lang $pkgname-doc"
+source="https://download.gnome.org/sources/gnome-disk-utility/${pkgver%.*}/gnome-disk-utility-$pkgver.tar.xz"
+
+build() {
+	abuild-meson . output
+	meson compile -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="
+c2aa29de1c7f483602499edf127e71270b43c0a6c9241f4c62453f45c65aea500cb8fed7af4f70b7c53d07ac9de9866090e7403d9d523e49dd826361f8224769  gnome-disk-utility-46.0.tar.xz
+"

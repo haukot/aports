@@ -1,0 +1,26 @@
+# Maintainer:
+pkgname=himitsu-firefox
+pkgver=0.5
+pkgrel=0
+pkgdesc="Firefox integration for Himitsu"
+url="https://himitsustore.org"
+arch="x86_64 aarch64 riscv64" # Hare
+license="GPL-3.0-only"
+makedepends="hare hare-json himitsu-dev zip"
+source="
+	$pkgname-$pkgver.tar.gz::https://git.sr.ht/~sircmpwn/himitsu-firefox/archive/$pkgver.tar.gz
+"
+install="$pkgname.post-install"
+options="!check"
+
+build() {
+	make -j1 PREFIX=/usr
+}
+
+package() {
+	make DESTDIR="$pkgdir" PREFIX=/usr install-native
+}
+
+sha512sums="
+2a355ab273156c1e05b4ca9a0e248e068ebf1a564de32559b8692a03cb33f2880785c5aa63faeb69479f98b4adec3d353ac5c68329b24bc332833602b2f67006  himitsu-firefox-0.5.tar.gz
+"

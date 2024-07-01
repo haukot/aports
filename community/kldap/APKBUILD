@@ -1,0 +1,50 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: team/kde <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=kde-applications
+pkgname=kldap
+pkgver=24.05.1
+pkgrel=0
+pkgdesc="LDAP access API for KDE"
+# armhf blocked by extra-cmake-modules
+arch="all !armhf"
+url="https://kontact.kde.org/"
+license="LGPL-2.0-or-later"
+depends_dev="
+	kcompletion-dev
+	kdoctools-dev
+	ki18n-dev
+	kio-dev
+	kwidgetsaddons-dev
+	openldap-dev
+	qtkeychain-dev
+	"
+makedepends="$depends_dev
+	extra-cmake-modules
+	cyrus-sasl-dev
+	samurai
+	"
+subpackages="$pkgname-dev $pkgname-doc $pkgname-lang"
+_repo_url="https://invent.kde.org/pim/kldap.git"
+source="https://download.kde.org/stable/release-service/$pkgver/src/kldap-$pkgver.tar.xz"
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib
+	cmake --build build
+}
+
+check() {
+	ctest --test-dir build --output-on-failure
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+dc0fef75b79de2c35643070fbbe82da2d4307d8d995246f030f2176519f136d93ad25f6019ca3e6ab0cac94fd23b33163fac80539ce03af34301e9a2617280c9  kldap-24.05.1.tar.xz
+"

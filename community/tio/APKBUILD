@@ -1,0 +1,32 @@
+# Contributor: Sodface <sod@sodface.com>
+# Maintainer: Sodface <sod@sodface.com>
+pkgname=tio
+pkgver=3.4
+pkgrel=0
+pkgdesc="Simple TTY Terminal I/O Application"
+url="https://github.com/tio/tio"
+arch="all"
+license="GPL-2.0-or-later"
+makedepends="
+	bash-completion-dev
+	glib-dev
+	linux-headers
+	lua5.4-dev
+	meson
+	"
+options="!check" # no test suite
+subpackages="$pkgname-doc $pkgname-bash-completion"
+source="https://github.com/tio/tio/releases/download/v$pkgver/tio-$pkgver.tar.xz"
+
+build() {
+	abuild-meson . output
+	meson compile -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="
+071ae7afe4be6fec7e6761765093f508f1e511e6efe385361ede87d0168fc1b1f755a0e0599f5d4bfacf23b3f43557aa0c99577c85536806649acfbe557b7cf3  tio-3.4.tar.xz
+"

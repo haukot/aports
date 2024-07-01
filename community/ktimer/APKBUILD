@@ -1,0 +1,50 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: team/kde <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=kde-applications
+pkgname=ktimer
+pkgver=24.05.1
+pkgrel=0
+pkgdesc="A little tool to execute programs after some time"
+# armhf blocked by extra-cmake-modules
+arch="all !armhf"
+url="https://kde.org/applications/utilities/org.kde.ktimer"
+license="GPL-2.0-or-later"
+makedepends="
+	extra-cmake-modules
+	kconfig-dev
+	kdbusaddons-dev
+	kdoctools-dev
+	ki18n-dev
+	kio-dev
+	knotifications-dev
+	kstatusnotifieritem-dev
+	kwidgetsaddons-dev
+	qt6-qtbase-dev
+	samurai
+	"
+subpackages="$pkgname-doc $pkgname-lang"
+_repo_url="https://invent.kde.org/utilities/ktimer.git"
+source="https://download.kde.org/stable/release-service/$pkgver/src/ktimer-$pkgver.tar.xz"
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DKF_IGNORE_PLATFORM_CHECK=ON # does not have metainfo.yaml
+	cmake --build build
+}
+
+check() {
+	ctest --test-dir build --output-on-failure
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+3366ecf428c1e271a739bb7c5f23c8e436bccff50a9404b49abaf8b76f88b8ca1603be5d5017d47a7a0fe5d5b19500bece99e6260a2fe4e484ed42bbc2c24d59  ktimer-24.05.1.tar.xz
+"

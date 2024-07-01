@@ -1,0 +1,49 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: team/kde <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=kde-applications
+pkgname=kalk
+pkgver=24.05.1
+pkgrel=0
+pkgdesc="A powerful cross-platfrom calculator application"
+arch="all !armhf" # Blocked by qt6-qtdeclarative
+url="https://invent.kde.org/utilities/kalk"
+license="GPL-3.0-or-later"
+makedepends="
+	bison
+	extra-cmake-modules
+	flex
+	gmp-dev
+	kconfig-dev
+	kcoreaddons-dev
+	ki18n-dev
+	kirigami-dev
+	kunitconversion-dev
+	libqalculate-dev
+	mpfr-dev
+	qt6-qtbase-dev
+	samurai
+	"
+subpackages="$pkgname-lang"
+_repo_url="https://invent.kde.org/utilities/kalk.git"
+source="https://download.kde.org/stable/release-service/$pkgver/src/kalk-$pkgver.tar.xz"
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr
+	cmake --build build
+}
+
+check() {
+	ctest --test-dir build --output-on-failure -E "knumbertest|inputmanagertest"
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+bbb3fa3e5ddb8f8e4e10a96161996334cb0954a652b8004714ff120530d8d054cf699fee18efd974ea814e0b75bfddaae80a02383de6d6a5a92a62f45fcbce5a  kalk-24.05.1.tar.xz
+"

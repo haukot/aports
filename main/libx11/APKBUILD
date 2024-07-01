@@ -1,0 +1,54 @@
+# Maintainer: Natanael Copa <ncopa@alpinelinux.org>
+pkgname=libx11
+pkgver=1.8.9
+pkgrel=1
+pkgdesc="X11 client-side library"
+url="https://xorg.freedesktop.org/"
+arch="all"
+license="X11"
+subpackages="$pkgname-static $pkgname-dev $pkgname-doc"
+depends_dev="libxcb-dev xtrans"
+makedepends="$depends_dev xorgproto util-macros xmlto"
+source="https://www.x.org/releases/individual/lib/libX11-$pkgver.tar.xz"
+builddir="$srcdir"/libX11-$pkgver
+
+# secfixes:
+#   1.8.7-r0:
+#     - CVE-2023-43785
+#     - CVE-2023-43786
+#     - CVE-2023-43787
+#   1.7.1-r0:
+#     - CVE-2021-31535
+#   1.6.12-r0:
+#     - CVE-2020-14363
+#   1.6.10-r0:
+#     - CVE-2020-14344
+#   1.6.6-r0:
+#     - CVE-2018-14598
+#     - CVE-2018-14599
+#     - CVE-2018-14600
+
+build() {
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--localstatedir=/var \
+		--disable-xf86bigfont
+	make
+}
+
+check() {
+	make check
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+	install -Dm644 COPYING "$pkgdir"/usr/share/licenses/$pkgname/COPYING
+}
+
+sha512sums="
+737af91818537295ac86be601b1e3d7e37d150716ec549580913b7cc9a44fee7a6ce9dbc3d46167eed91f23fe857c4dd355ed8f8440fe5fbbf8e9ebe47091b96  libX11-1.8.9.tar.xz
+"

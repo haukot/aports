@@ -1,0 +1,52 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: team/kde <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=kde-applications
+pkgname=kolourpaint
+pkgver=24.05.1
+pkgrel=0
+# armhf blocked by extra-cmake-modules
+arch="all !armhf"
+url="http://www.kolourpaint.org/"
+pkgdesc="An easy-to-use paint program"
+license="BSD-2-Clause AND LGPL-2.0-or-later AND GFDL-1.2-only"
+makedepends="
+	extra-cmake-modules
+	kdoctools-dev
+	kguiaddons-dev
+	ki18n-dev
+	kiconthemes-dev
+	kio-dev
+	kitemmodels-dev
+	ktextwidgets-dev
+	kwidgetsaddons-dev
+	kxmlgui-dev
+	libksane-dev
+	qt6-qtbase-dev
+	samurai
+	"
+subpackages="$pkgname-doc $pkgname-lang"
+_repo_url="https://invent.kde.org/graphics/kolourpaint.git"
+source="https://download.kde.org/stable/release-service/$pkgver/src/kolourpaint-$pkgver.tar.xz"
+
+build() {
+	cmake -B build -G Ninja \
+		-DBUILD_WITH_QT6=ON \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib
+	cmake --build build
+}
+
+check() {
+	ctest --test-dir build --output-on-failure
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+a9d530cc7dc6c00d90614e3422609ab226df9b2318834263810c51cc2ea59462d01582f95e3963366d62e71aa7f519bba6babbdcc04d48c01e9f0b8041b5d694  kolourpaint-24.05.1.tar.xz
+"

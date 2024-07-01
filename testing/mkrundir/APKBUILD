@@ -1,0 +1,27 @@
+# Contributor: Hugo Osvaldo Barrera <hugo@whynothugo.nl>
+# Maintainer: Hugo Osvaldo Barrera <hugo@whynothugo.nl>
+pkgname=mkrundir
+pkgver=0.3.1
+pkgrel=1
+pkgdesc="Create an XDG_RUNTIME_DIR"
+url="https://sr.ht/~whynothugo/mkrundir/"
+arch="x86_64 aarch64 riscv64" # Hare
+license="ISC"
+makedepends="hare libcap-setcap"
+source="
+	mkrundir-$pkgver.tar.gz::https://git.sr.ht/~whynothugo/mkrundir/archive/v$pkgver.tar.gz
+"
+options="!check setcap"
+builddir="$srcdir/mkrundir-v$pkgver/"
+
+build() {
+	make PREFIX=/usr mkrundir
+}
+
+package() {
+	make DESTDIR="$pkgdir" PREFIX=/usr install
+}
+
+sha512sums="
+586dcfcd39a953cd012b44f63b7f6a513a1f020d13b8e42e3bfde994a1b595ae82fd6f16ecf1867262b51a4adef2a5ae28f8990126fcb3d77931d973f62a3a68  mkrundir-0.3.1.tar.gz
+"

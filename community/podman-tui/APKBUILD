@@ -1,0 +1,35 @@
+# Contributor: omni <omni+alpine@hack.org>
+# Maintainer: omni <omni+alpine@hack.org>
+pkgname=podman-tui
+pkgver=1.1.0
+pkgrel=0
+pkgdesc="Terminal user interface for Podman v4 & v5"
+url="https://github.com/containers/podman-tui"
+license="Apache-2.0"
+# s390x, loongarch64: podman (netavark & aardvark-dns -> nix crate)
+arch="all !s390x !loongarch64"
+makedepends="go gpgme-dev linux-headers btrfs-progs-dev lvm2-dev"
+depends="podman"
+options="!check"
+source="$pkgname-$pkgver.tar.gz::https://github.com/containers/podman-tui/archive/v$pkgver.tar.gz"
+
+# secfixes:
+#   0.15.0-r0:
+#     - CVE-2023-48795
+
+export GOFLAGS="$GOFLAGS -trimpath -mod=readonly -modcacherw"
+export GOCACHE="${GOCACHE:-"$srcdir/go-cache"}"
+export GOTMPDIR="${GOTMPDIR:-"$srcdir"}"
+export GOMODCACHE="${GOMODCACHE:-"$srcdir/go"}"
+
+build() {
+	go build -v .
+}
+
+package() {
+	install -Dm0755 "$pkgname" -t "$pkgdir"/usr/bin
+}
+
+sha512sums="
+d8e4710f489ac124ad11930c5051d9fc279166316bb85d952847e6a924f70b5cc64487f8c161878a21e8f88784c47c2f9f36b5b332c0736f48f3dd0ada92584a  podman-tui-1.1.0.tar.gz
+"

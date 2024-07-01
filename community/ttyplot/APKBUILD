@@ -1,0 +1,25 @@
+# Contributor: Sergiy Stupar <owner@sestolab.pp.ua>
+# Maintainer: Sergiy Stupar <owner@sestolab.pp.ua>
+pkgname=ttyplot
+pkgver=1.6.3
+pkgrel=0
+pkgdesc="Realtime plotting utility for terminal/console with data input from stdin"
+url="https://github.com/tenox7/ttyplot"
+arch="all"
+options="!check" # No tests
+license="Apache-2.0"
+makedepends="ncurses-dev"
+subpackages="$pkgname-doc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/tenox7/ttyplot/archive/$pkgver.tar.gz"
+
+build() {
+	make
+}
+
+package() {
+	make MANPREFIX=/usr/share/man PREFIX=/usr DESTDIR="$pkgdir" install
+}
+
+sha512sums="
+235d4008829222187762aeb15f8936fae50aeb2e3be653def8211241fa6b3da0e4c0e0bab61e85596c18f48842ee8d38ceab6c44df73a3bef0f9b62b51cb68d7  ttyplot-1.6.3.tar.gz
+"

@@ -1,0 +1,60 @@
+# Contributor: Jakob Meier <comcloudway@ccw.icu>
+# Maintainer: Jakob Meier <comcloudway@ccw.icu>
+pkgname=komikku
+pkgver=1.48.1
+pkgrel=0
+pkgdesc="manga reader for GNOME"
+url="https://codeberg.org/valos/Komikku"
+arch="noarch !s390x" # limited by blueprint-compiler
+license="GPL-3.0-only"
+depends="
+	libadwaita
+	py3-beautifulsoup4
+	py3-brotli
+	py3-colorthief
+	py3-dateparser
+	py3-emoji
+	py3-gobject3
+	py3-keyring
+	py3-lxml
+	py3-magic
+	py3-natsort
+	py3-piexif
+	py3-pillow
+	py3-pillow_heif
+	py3-pure_protobuf
+	py3-rarfile
+	py3-requests
+	py3-unidecode
+	webkit2gtk-6.0
+	"
+makedepends="
+	blueprint-compiler-dev
+	cmake
+	desktop-file-utils
+	gobject-introspection-dev
+	gtk4.0-dev
+	libadwaita-dev
+	meson
+	"
+subpackages="$pkgname-lang $pkgname-pyc"
+source="$pkgname-$pkgver.tar.gz::https://codeberg.org/valos/Komikku/archive/v$pkgver.tar.gz"
+builddir="$srcdir/komikku"
+
+build() {
+	abuild-meson build
+
+	ninja -C build
+}
+
+check() {
+	meson test -C build --print-errorlog
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install -C build
+}
+
+sha512sums="
+be4731e9b3da2699f12eb39a35ff5b54cf39c55a91b68c72db6d9800129635408dff369bd2c76c8c9372ff6266d3101b43aa15880999887524db12d3df17733c  komikku-1.48.1.tar.gz
+"

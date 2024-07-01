@@ -1,0 +1,45 @@
+# Maintainer: Jakub Jirutka <jakub@jirutka.cz>
+pkgname=libjwt
+pkgver=1.17.1
+pkgrel=0
+pkgdesc="JWT C Library"
+url="https://github.com/benmcollins/libjwt"
+arch="all"
+license="MPL-2.0"
+makedepends="
+	autoconf
+	automake
+	jansson-dev
+	libtool
+	openssl-dev
+	"
+checkdepends="check-dev"
+subpackages="$pkgname-static $pkgname-dev"
+source="$pkgname-$pkgver.tar.gz::https://github.com/benmcollins/libjwt/archive/refs/tags/v$pkgver.tar.gz"
+
+prepare() {
+	default_prepare
+
+	autoreconf -fvi
+}
+
+build() {
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--without-examples
+	make
+}
+
+check() {
+	make check
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+}
+
+sha512sums="
+2eb9178c0603bb0e836f5f47d036ac2a668ae638f16c326ca34a103ac14d9c44a7d728b1431162998609cb5207aee7d8a5be95fb58872c883d4c77c33aa5b96a  libjwt-1.17.1.tar.gz
+"

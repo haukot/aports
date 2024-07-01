@@ -1,0 +1,50 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: team/kde <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=kde-applications
+pkgname=kongress
+pkgver=24.05.1
+pkgrel=0
+pkgdesc="Companion application for conferences"
+# armhf blocked by extra-cmake-modules
+arch="all !armhf"
+url="https://invent.kde.org/utilities/kongress"
+license="GPL-3.0-or-later AND LGPL-3.0-or-later AND BSD-2-Clause AND CC-BY-SA-4.0 AND CC0-1.0"
+depends="kirigami"
+makedepends="
+	extra-cmake-modules
+	kcalendarcore-dev
+	kconfig-dev
+	kcoreaddons-dev
+	kdbusaddons-dev
+	ki18n-dev
+	kirigami-dev
+	knotifications-dev
+	kservice-dev
+	qt6-qtbase-dev
+	qt6-qtdeclarative-dev
+	qt6-qtsvg-dev
+	qt6-qttools-dev
+	samurai
+	"
+subpackages="$pkgname-lang"
+_repo_url="https://invent.kde.org/utilities/kongress.git"
+source="https://download.kde.org/stable/release-service/$pkgver/src/kongress-$pkgver.tar.xz"
+# No tests
+options="!check"
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+07cf40fdff5e0706ff89df1b94ab23c85e5e8d2626d8664e0f9bbbc22c11f4f52819522074ab84448322e2f271b64dfce35173016b62cb10cbe95d616582eb64  kongress-24.05.1.tar.xz
+"

@@ -1,0 +1,64 @@
+# Contributor: Sören Tempel <soeren+alpine@soeren-tempel.net>
+# Maintainer: Sören Tempel <soeren+alpine@soeren-tempel.net>
+pkgname=ormolu
+pkgver=0.7.5.0
+pkgrel=0
+pkgdesc="Formatter for Haskell source code"
+url="https://github.com/tweag/ormolu"
+arch="x86_64 aarch64" # limited by ghc
+license="BSD-3-Clause"
+makedepends="ghc cabal"
+options="net"
+subpackages="$pkgname-doc"
+source="https://hackage.haskell.org/package/ormolu-$pkgver/ormolu-$pkgver.tar.gz
+	cabal.project.freeze"
+
+# Directory were cabal files are stored.
+export CABAL_DIR="$srcdir/dist"
+
+# Needed to fix build on aarch64.
+export PATH="$PATH:/usr/lib/llvm15/bin"
+
+cabal_update() {
+	cd $builddir
+	cabal v2-update
+	(
+		cd "$builddir"
+		cabal v2-freeze --shadow-installed-packages
+		mv cabal.project.freeze "$startdir/"
+	)
+}
+
+prepare() {
+	default_prepare
+	ln -sf "$srcdir/cabal.project.freeze" \
+		"$builddir/cabal.project.freeze"
+}
+
+build() {
+	cabal v2-update
+	cabal v2-build ormolu:exes \
+		--jobs=${JOBS:-1} \
+		--prefix=/usr \
+		--docdir=/usr/share/doc/$pkgname \
+		--sysconfdir=/etc
+}
+
+check() {
+	cabal test
+}
+
+package() {
+	# See https://github.com/haskell/cabal/issues/6919#issuecomment-761563498
+	cabal list-bin ormolu:exes | xargs install -Dm755 -t "$pkgdir"/usr/bin
+
+	# Install some docmuentation files
+	mkdir -p "$pkgdir"/usr/share/doc/$pkgname
+	install -m644 README.md CHANGELOG.md DESIGN.md \
+		"$pkgdir"/usr/share/doc/$pkgname
+}
+
+sha512sums="
+296b7f5b1859710ff965f39c97be7c6c180b26f5b9d43e85c716e9e83f6cb8c35a2870ef0581a6cb7c19c779eac9dfe3ee1dd07a7307cff5ff456887df396a11  ormolu-0.7.5.0.tar.gz
+bf45ba786bca256e9908c456ae0d6e6eba516edd53a3b2fd25bdc63a0c4270278a2dcdaa67f261ec0943503f384c3f315279ee77da9a58d4d91f724fd5174829  cabal.project.freeze
+"

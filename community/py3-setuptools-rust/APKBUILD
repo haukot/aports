@@ -1,0 +1,62 @@
+# Contributor: Aiden Grossman <agrossman154@yahoo.com>
+# Maintainer: Celeste <cielesti@protonmail.com>
+pkgname=py3-setuptools-rust
+pkgver=1.9.0
+pkgrel=2
+pkgdesc="Setuptools plugin for rust support"
+url="https://github.com/PyO3/setuptools-rust"
+arch="noarch"
+license="MIT"
+depends="
+	cargo
+	py3-semantic-version
+	py3-setuptools
+	"
+makedepends="
+	py3-gpep517
+	py3-setuptools_scm
+	py3-wheel
+	"
+checkdepends="
+	libffi-dev
+	py3-pytest
+	python3-dev
+	"
+subpackages="$pkgname-pyc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/PyO3/setuptools-rust/archive/refs/tags/v$pkgver.tar.gz
+	fix-pytest-error.patch
+	"
+builddir="$srcdir/setuptools-rust-$pkgver"
+options="net" # check needs network access, no easy patch
+
+export SETUPTOOLS_SCM_PRETEND_VERSION=$pkgver
+
+prepare() {
+	default_prepare
+
+	# This test relies on behavior that may be glibc-specific
+	mv -v examples/hello-world/noxfile.py \
+		examples/hello-world/noxfile.py.disabled
+}
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	python3 -m venv --clear --without-pip --system-site-packages .testenv
+	.testenv/bin/python3 -m installer .dist/*.whl
+	.testenv/bin/python3 -m pytest tests/ setuptools_rust/
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/*.whl
+}
+
+sha512sums="
+874bb632a2847cd5febeaa766765ee58432b1a0b96fddfe0fb779f9d7965b726a7c7836e3de6700d801aca1b00a64326ca3de63027069c4a047800bd5d64dfcc  py3-setuptools-rust-1.9.0.tar.gz
+3c9bf34e7243c0c2d561a3e8efb29ceedb70238b570220c96ed5a5aba98cc7fc11911b2800098495eb506b8250ceceb3b5b331c00a1a88a2764b42c49141fb6c  fix-pytest-error.patch
+"

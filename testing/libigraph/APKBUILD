@@ -1,0 +1,46 @@
+# Contributor: Grigory Kirillov <txgk@bk.ru>
+# Maintainer: Jonas <3426-spameier@users.gitlab.alpinelinux.org>
+pkgname=libigraph
+pkgver=0.10.12
+pkgrel=0
+pkgdesc="Library for creating and manipulating graphs"
+url="https://igraph.org"
+# s390x: blocked by openmp
+arch="all !s390x"
+license="GPL-2.0-or-later"
+# bison and flex are needed when building from commit
+makedepends="
+	arpack-dev
+	cmake
+	glpk-dev
+	libxml2-dev
+	openblas-dev
+	plfit-dev
+	samurai
+	"
+subpackages="$pkgname-dev"
+source="https://github.com/igraph/igraph/releases/download/$pkgver/igraph-$pkgver.tar.gz"
+builddir="$srcdir/igraph-$pkgver"
+
+build() {
+	# For building against master branch:
+	#echo "$pkgver" > IGRAPH_VERSION
+
+	cmake -B builddir -G Ninja \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DBUILD_SHARED_LIBS=ON
+	cmake --build builddir
+}
+
+check() {
+	cmake --build builddir --target check
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install builddir
+}
+
+sha512sums="
+1a7b055ab2148fdf04187d785895b930ae2a54ae0240ea9656e129a38347b1caeb28dda5a3a7e34282462363150d7afd25acf8cd335577ed441b8a5cecc0dd25  igraph-0.10.12.tar.gz
+"

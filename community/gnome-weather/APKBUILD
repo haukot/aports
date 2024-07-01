@@ -1,0 +1,48 @@
+# Contributor: Rasmus Thomsen <oss@cogitri.dev>
+# Maintainer: team/gnome <ablocorrea@hotmail.com>
+pkgname=gnome-weather
+pkgver=46.0
+pkgrel=0
+pkgdesc="GNOME Weather application"
+url="https://wiki.gnome.org/Apps/Weather"
+# armhf and s390x and riscv64 blocked by gjs
+arch="noarch !armhf !s390x !riscv64"
+license="GPL-2.0-only"
+depends="
+	geoclue
+	gjs
+	gobject-introspection
+	gtk4.0
+	libadwaita
+	libgweather4
+	"
+makedepends="
+	geoclue-dev
+	gjs-dev
+	glib-dev
+	gobject-introspection-dev
+	gtk4.0-dev
+	libadwaita-dev
+	libgweather4-dev
+	meson
+	"
+checkdepends="appstream-glib desktop-file-utils"
+subpackages="$pkgname-lang"
+source="https://download.gnome.org/sources/gnome-weather/${pkgver%.*}/gnome-weather-$pkgver.tar.xz"
+
+build() {
+	abuild-meson . output
+	meson compile -C output
+}
+
+check() {
+	meson test --no-rebuild --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="
+b180b231359e7b1cfa593b9a536d77520d6183aa752a8900bb27a290bc5f6f9676da132897e51e2810baca57196c9328a8cbbbb172068f52409076e39ba87a8b  gnome-weather-46.0.tar.xz
+"

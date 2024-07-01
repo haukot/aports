@@ -1,0 +1,45 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: team/kde <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=kde-frameworks
+pkgname=kcodecs
+pkgver=6.3.0
+pkgrel=0
+pkgdesc="Provide a collection of methods to manipulate strings using various encodings"
+arch="all !armhf" # armhf blocked by extra-cmake-modules
+url="https://community.kde.org/Frameworks"
+license="LGPL-2.1-only AND LGPL-2.1-or-later"
+makedepends="
+	doxygen
+	extra-cmake-modules
+	gperf
+	graphviz
+	qt6-qttools-dev
+	samurai
+	"
+checkdepends="xvfb-run"
+subpackages="$pkgname-dev $pkgname-doc $pkgname-lang"
+_repo_url="https://invent.kde.org/frameworks/kcodecs.git"
+source="https://download.kde.org/stable/frameworks/${pkgver%.*}/kcodecs-$pkgver.tar.xz"
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_QCH=ON
+	cmake --build build
+}
+
+check() {
+	xvfb-run ctest --test-dir build --output-on-failure build -E "(rfc2047|kcharsets)test"
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+6b861dc4fc1566f655a3bf734a827fe03d7352faa110b4eb02c799d96701635497238b7ce03e272eadee4ad011b7dbde71b291d519993b512cf67583013b5eac  kcodecs-6.3.0.tar.xz
+"

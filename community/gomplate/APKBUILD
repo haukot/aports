@@ -1,0 +1,43 @@
+# Maintainer: Dave Henderson <dhenderson@gmail.com>
+pkgname=gomplate
+pkgver=3.11.8
+pkgrel=1
+pkgdesc="A versatile Go template processor"
+url="https://github.com/hairyhenderson/gomplate"
+arch="all"
+license="MIT"
+depends="ca-certificates"
+makedepends="go"
+options="net"
+source="$pkgname-$pkgver.tar.gz::https://github.com/hairyhenderson/gomplate/archive/v$pkgver.tar.gz"
+
+export GOFLAGS="$GOFLAGS -trimpath -modcacherw"
+export GOCACHE="${GOCACHE:-"$srcdir/go-cache"}"
+export GOTMPDIR="${GOTMPDIR:-"$srcdir"}"
+export GOMODCACHE="${GOMODCACHE:-"$srcdir/go"}"
+
+prepare() {
+	default_prepare
+
+	# Fix build with -buildmode=pie.
+	#
+	# See: https://gitlab.alpinelinux.org/alpine/aports/-/issues/15809
+	sed -i Makefile -e 's/CGO_ENABLED=0//'
+}
+
+build() {
+	make build \
+		VERSION="$pkgver" \
+		COMMIT="unknown"
+}
+
+check() {
+	# Note: make test (that runs go test -race) doesn't work.
+	go test -v
+}
+
+package() {
+	install -D -m 755 bin/gomplate "$pkgdir"/usr/bin/gomplate
+}
+
+sha512sums="3a49b8a9136ea15d29af82757160a8465c4220b66e7341b2f5ae21211b20273878437a09c98fb38721ad2d4cc2a080e5cb8276fbfe3d695e53a340fafaed979b  gomplate-3.11.8.tar.gz"

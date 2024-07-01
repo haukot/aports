@@ -1,0 +1,48 @@
+# Maintainer: Celeste <cielesti@protonmail.com>
+pkgname=py3-rpds-py
+pkgver=0.18.1_git20240605
+_gitrev=af47095cda78b01a0ef724c1c60663b309ac7b18
+pkgrel=0
+pkgdesc="Python bindings to the Rust Persistent Data Structures (rpds) crate"
+url="https://github.com/crate-py/rpds"
+arch="all"
+license="MIT"
+makedepends="
+	cargo
+	py3-gpep517
+	py3-maturin
+	"
+checkdepends="py3-pytest"
+subpackages="$pkgname-pyc"
+#source="https://github.com/crate-py/rpds/releases/download/v$pkgver/rpds_py-$pkgver.tar.gz"
+source="https://github.com/crate-py/rpds/archive/$_gitrev/rpds_py-$_gitrev.tar.gz"
+builddir="$srcdir/rpds-$_gitrev"
+options="net" # Required to download Rust crates
+
+prepare() {
+	default_prepare
+
+	cargo fetch --locked
+}
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--config-json '{"build-args": "--frozen"}' \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	python3 -m venv --clear --without-pip --system-site-packages .testenv
+	.testenv/bin/python3 -m installer .dist/*.whl
+	.testenv/bin/python3 -m pytest
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/*.whl
+}
+
+sha512sums="
+84f02707062dc3cdf54fccbdb8ac6faf0d10e468e26ba0d7e53de26d1a5e9549578e4ede5c857ed29c5d6501b2ef04a5a2166154329e6f23b66972913a388dbc  rpds_py-af47095cda78b01a0ef724c1c60663b309ac7b18.tar.gz
+"

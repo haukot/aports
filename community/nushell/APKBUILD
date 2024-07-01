@@ -1,0 +1,79 @@
+# Contributor: nibon7 <nibon7@163.com>
+# Maintainer: nibon7 <nibon7@163.com>
+pkgname=nushell
+pkgver=0.92.0
+pkgrel=0
+pkgdesc="A new type of shell"
+url="https://www.nushell.sh"
+# s390x: nix crate
+arch="all !s390x"
+license="MIT"
+makedepends="
+	cargo
+	cargo-auditable
+	libgit2-dev
+	libssh2-dev
+	mimalloc2-dev
+	openssl-dev
+	sqlite-dev
+	"
+subpackages="$pkgname-doc $pkgname-plugins:_plugins"
+install="$pkgname.post-install $pkgname.post-upgrade $pkgname.pre-deinstall"
+source="$pkgname-$pkgver.tar.gz::https://github.com/nushell/nushell/archive/$pkgver.tar.gz
+	system-deps.patch
+	cargo-update.patch
+	"
+
+export LIBSSH2_SYS_USE_PKG_CONFIG=1  # use system libssh2
+
+prepare() {
+	default_prepare
+
+	# Rust target triple.
+	local target=$(rustc -vV | sed -n 's/host: //p')
+
+	# Build against system-provided libs
+	mkdir -p .cargo
+	cat >> .cargo/config.toml <<-EOF
+
+		[target.$target]
+		git2 = { rustc-link-lib = ["git2"] }
+		mimalloc = { rustc-link-lib = ["mimalloc"] }
+		rusqlite = { rustc-link-lib = ["sqlite3"] }
+	EOF
+
+	cargo fetch --target="$CTARGET" --locked
+}
+
+build() {
+	cargo auditable build --workspace --release --frozen
+}
+
+check() {
+	cargo test --workspace --frozen
+}
+
+package() {
+	find target/release \
+		-maxdepth 1 \
+		-executable \
+		-type f \
+		-name "nu*" \
+		-exec install -Dm755 '{}' -t "$pkgdir"/usr/bin/ \;
+
+	install -Dm644 LICENSE \
+		-t "$pkgdir"/usr/share/licenses/$pkgname/
+}
+
+_plugins() {
+	pkgdesc="Nushell plugins"
+	depends="nushell=$pkgver-r$pkgrel"
+
+	amove usr/bin/nu_plugin_*
+}
+
+sha512sums="
+0ed28234ce9958ce7861a07aaa44dcc2a4fc115197b760926437646e90876b4e509285f80a9ef6c39cdbb980b7c8df5cce33701fea88f1d938ceb49450784fb3  nushell-0.92.0.tar.gz
+a8fd3d672f48b81fa92f85de64cd9564fa86fd8a98ec4ecd54b722c1b48842d6d999de5d68524703f21063081ad1a5f8588d1e845290355431d3cb29d8c4c274  system-deps.patch
+ba9ce02999bc6c704f6df85803ad87f45bc3308311eee1a57377ffe03ed4c9a5c89a3c13e4ad8c41a5af572fdfa0c5db551d249ec279243a0ecc82647cb3df25  cargo-update.patch
+"

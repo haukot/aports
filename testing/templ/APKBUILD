@@ -1,0 +1,40 @@
+# Maintainer: Hoang Nguyen <folliekazetani@protonmail.com>
+pkgname=templ
+pkgver=0.2.663
+pkgrel=2
+pkgdesc="Language for writing HTML user interface in Go"
+url="https://templ.guide/"
+arch="all"
+license="MIT"
+makedepends="go"
+checkdepends="gopls"
+source="$pkgname-$pkgver.tar.gz::https://github.com/a-h/templ/archive/refs/tags/v$pkgver.tar.gz"
+options="net" # download Go modules
+
+# /cmd/templ/lspcmd: hangs on s390x, fails on riscv64
+# /cmd/templ/generatecmd/testwatch: panics on 32-bit platforms (unaligned 64-bit atomic operation)
+case "$CARCH" in
+	s390x|riscv64|x86|armhf|armv7) options="$options !check";;
+esac
+
+export GOCACHE="${GOCACHE:-"$srcdir/go-cache"}"
+export GOTMPDIR="${GOTMPDIR:-"$srcdir"}"
+export GOMODCACHE="${GOMODCACHE:-"$srcdir/go"}"
+
+build() {
+	go build -v ./cmd/templ
+}
+
+check() {
+	# -trimpath is required for tests inside /cmd/templ/generatecmd/testwatch to pass
+	# The tests create templates inside /tmp and try to watch those directories
+	GOFLAGS="${GOFLAGS/-trimpath/}" go test ./...
+}
+
+package() {
+	install -Dm755 $pkgname -t "$pkgdir"/usr/bin/
+}
+
+sha512sums="
+ea70cbae3dda39c1af331d4cecdd8690a09223892d5a3992fa52ffaeab4d165981cc0359abd9d08d269f936ceab70e998320ee64c8a4ffe984370e6099011df5  templ-0.2.663.tar.gz
+"

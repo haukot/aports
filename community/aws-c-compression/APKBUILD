@@ -1,0 +1,50 @@
+# Contributor: Holger Jaekel <holger.jaekel@gmx.de>
+# Maintainer: fossdd <fossdd@pwned.life>
+pkgname=aws-c-compression
+pkgver=0.2.18
+pkgrel=1
+pkgdesc="C99 implementation of huffman encoding/decoding"
+url="https://github.com/awslabs/aws-c-compression"
+# s390x: aws-c-common
+arch="all !s390x"
+license="Apache-2.0"
+makedepends="
+	aws-c-common-dev
+	cmake
+	samurai
+	"
+subpackages="$pkgname-dev"
+source="$pkgname-$pkgver.tar.gz::https://github.com/awslabs/aws-c-compression/archive/refs/tags/v$pkgver.tar.gz"
+
+build() {
+	if [ "$CBUILD" != "$CHOST" ]; then
+		local crossopts="-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_HOST_SYSTEM_NAME=Linux"
+	fi
+	CFLAGS="$CFLAGS -flto=auto" \
+	CXXFLAGS="$CXXFLAGS -flto=auto" \
+	cmake -B build -G Ninja \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=/usr/lib \
+		-DBUILD_SHARED_LIBS=True \
+		-DCMAKE_BUILD_TYPE=None \
+		-DBUILD_TESTING="$(want_check && echo ON || echo OFF)" \
+		$crossopts
+	cmake --build build
+}
+
+check() {
+	ctest --test-dir build --output-on-failure -j${JOBS:-2}
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+dev() {
+	default_dev
+	amove usr/lib/aws-c-compression
+}
+
+sha512sums="
+1f955719fbaa40a7b57b2a6cffac485ce0008fdcbddcea10785456458d16a402b43f8129dd9fd4d057031c3aa83f5e65b9e0b72879e2a56ad23235ab048d0646  aws-c-compression-0.2.18.tar.gz
+"

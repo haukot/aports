@@ -1,0 +1,39 @@
+# Contributor: Francesco Colista <fcolista@alpinelinux.org>
+# Maintainer: Fabian Affolter <fabian@affolter-engineering.ch>
+pkgname=py3-cssutils
+_pkgname=cssutils
+pkgver=2.10.2
+pkgrel=0
+pkgdesc="CSS Cascading Style Sheets library for Python"
+url="http://cthedot.de/cssutils/"
+arch="noarch"
+license="LGPL-3.0-or-later"
+makedepends="py3-gpep517 py3-setuptools py3-setuptools_scm py3-wheel"
+checkdepends="py3-pytest py3-jaraco.test"
+subpackages="$pkgname-pyc"
+source="https://files.pythonhosted.org/packages/source/c/cssutils/cssutils-$pkgver.tar.gz"
+builddir="$srcdir"/$_pkgname-$pkgver
+
+build() {
+	export SETUPTOOLS_SCM_PRETEND_VERSION=$pkgver
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	python3 -m venv --clear --without-pip --system-site-packages .testenv
+	.testenv/bin/python3 -m installer .dist/*.whl
+	.testenv/bin/python3 -m pytest cssutils/tests
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/cssutils*.whl
+
+	rm -r "$pkgdir"/usr/lib/python3*/site-packages/cssutils/tests
+}
+
+sha512sums="
+c678b6953b13e8a7ac7b2abbe0b8be26283973537089071828e618b359bcce27df636f382d8b0dc50b13962e0d2dffcce991a47f678954ec018849e57026446d  cssutils-2.10.2.tar.gz
+"

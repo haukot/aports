@@ -1,0 +1,33 @@
+# Maintainer: Hoang Nguyen <folliekazetani@protonmail.com>
+pkgname=hurl
+pkgver=4.3.0
+pkgrel=0
+pkgdesc="CLI to run HTTP requests defined in simple plain text format"
+url="https://hurl.dev/"
+arch="all"
+license="Apache-2.0"
+makedepends="cargo curl-dev libxml2-dev cargo-auditable"
+subpackages="$pkgname-doc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/Orange-OpenSource/hurl/archive/refs/tags/$pkgver.tar.gz
+	cargo-update.patch
+	"
+options="!check" # tests require a running local web server
+
+prepare() {
+	default_prepare
+	cargo fetch --target="$CTARGET" --locked
+}
+
+build() {
+	cargo auditable build --release --frozen
+}
+
+package() {
+	install -Dm755 target/release/hurl target/release/hurlfmt -t "$pkgdir"/usr/bin/
+	install -Dm644 docs/manual/hurl.1 docs/manual/hurlfmt.1 -t "$pkgdir"/usr/share/man/man1/
+}
+
+sha512sums="
+3d775beda4908bdd313d95c732d4a00aa7005bb41f960ee1cef709a997a9436f42d69fc5b35ebb6dac7a562667c1e45cff667fe8276296d1378187b3dbb20898  hurl-4.3.0.tar.gz
+f5746e438591780e054b83b194806c26cb90c1e492c62173b95314ce467e9fdc1307a7e45dbda6381a6e165c7d19b8785f32acff2bad572fd0ce5ae5d17f18b1  cargo-update.patch
+"

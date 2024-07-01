@@ -1,0 +1,36 @@
+# Contributor: Adam Jensen <adam@acj.sh>
+# Maintainer: Adam Jensen <adam@acj.sh>
+pkgname=rbspy
+pkgver=0.22.0
+pkgrel=0
+pkgdesc="Sampling profiler for Ruby"
+url="https://rbspy.github.io/"
+arch="all !armv7 !ppc64le !s390x !riscv64" # limited by cargo and build errors
+license="MIT"
+makedepends="cargo cargo-auditable"
+checkdepends="ruby"
+options="net"
+source="$pkgname-$pkgver.tar.gz::https://github.com/rbspy/rbspy/archive/v$pkgver.tar.gz"
+
+
+build() {
+	cargo auditable build --release --locked
+}
+
+check() {
+	# Some tests need additional privileges
+	cargo test --release --locked -- \
+		--skip sampler::tests \
+		--skip test_current_thread_address \
+		--skip test_initialize_with_disallowed_process \
+		--skip test_get_exec_trace \
+		--skip test_get_trace
+}
+
+package() {
+	install -Dm755 "target/release/rbspy" "$pkgdir/usr/bin/rbspy"
+}
+
+sha512sums="
+e06612bfe7c52a3bfeb886281265f73b388bd29ad61bdb8a05bcde89bab2a6f9273a0ebc6ee532c8cf0aa3fb9cb1c1ab925ba49b23876ad8ba15cc92dc99a4f5  rbspy-0.22.0.tar.gz
+"

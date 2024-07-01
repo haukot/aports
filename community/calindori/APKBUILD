@@ -1,0 +1,49 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: team/kde <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=kde-applications
+pkgname=calindori
+pkgver=24.05.1
+pkgrel=0
+pkgdesc="Calendar for Plasma Mobile"
+# armhf blocked by qt6-qtdeclarative
+arch="all !armhf"
+url="https://invent.kde.org/plasma-mobile/calindori"
+license="GPL-3.0-or-later AND LGPL-3.0-or-later AND BSD-2-Clause AND CC-BY-SA-4.0 AND CC0-1.0"
+depends="kirigami"
+makedepends="
+	extra-cmake-modules
+	kcalendarcore-dev
+	kconfig-dev
+	ki18n-dev
+	kirigami-dev
+	kpeople-dev
+	libplasma-dev
+	qt6-qtbase-dev
+	qt6-qtdeclarative-dev
+	qt6-qtsvg-dev
+	qt6-qttools-dev
+	samurai
+	"
+_repo_url="https://invent.kde.org/plasma-mobile/calindori.git"
+source="https://download.kde.org/stable/release-service/$pkgver/src/calindori-$pkgver.tar.xz"
+subpackages="$pkgname-lang"
+# No tests
+options="!check"
+
+build() {
+	cmake -B build -G Ninja \
+		-DBUILD_WITH_QT6=ON \
+		-DCMAKE_BUILD_TYPE=MinSizeRel \
+		-DCMAKE_INSTALL_PREFIX=/usr
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+45d9cc6afec800a8a09c69fb3ca0ccf7f34bc5e2042a98f89bbd37defec9634cdf43efe6d7fa6c57408dd00f00329df2a815b49fb571b2315e7897f083f92497  calindori-24.05.1.tar.xz
+"

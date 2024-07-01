@@ -1,0 +1,34 @@
+# Contributor: Antoine Martin (ayakael) <dev@ayakael.net>
+# Maintainer: Antoine Martin (ayakael) <dev@ayakael.net>
+pkgname=py3-imap-tools
+_pyname="imap-tools"
+pkgver=1.6.0
+pkgrel=1
+arch="noarch"
+pkgdesc="Work with email and mailbox by IMAP"
+url="https://pypi.python.org/project/imap-tools"
+license="Apache-2.0"
+makedepends="
+	py3-setuptools
+	py3-gpep517
+	py3-wheel
+	"
+options="!check" # No testsuite
+source="$pkgname-$pkgver.tar.gz::https://pypi.io/packages/source/i/imap-tools/imap-tools-$pkgver.tar.gz"
+builddir="$srcdir"/$_pyname-$pkgver
+subpackages="$pkgname-pyc"
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/*.whl
+}
+
+sha512sums="
+f5e0f9f5091dc4167a2a40838cf359cbd79bf129cd2fe082cc9cf88c5f4072ed8d9f11b97fe2423ea8a703a5a6a690cfe5f27cab43381741aa50b2dd5e272369  py3-imap-tools-1.6.0.tar.gz
+"

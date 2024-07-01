@@ -1,0 +1,64 @@
+# Maintainer: Hoang Nguyen <folliekazetani@protonmail.com>
+pkgname=kanister-tools
+pkgver=0.107.0
+pkgrel=2
+pkgdesc="CLI tools for application-level data management on Kubernetes"
+url="https://kanister.io/"
+# loongarch64: fails to build mod github.com/kopia/kopia@v0.16.2
+arch="all !loongarch64"
+license="Apache-2.0"
+makedepends="go"
+subpackages="
+	$pkgname-bash-completion
+	$pkgname-fish-completion
+	$pkgname-zsh-completion
+	"
+source="$pkgname-$pkgver.tar.gz::https://github.com/kanisterio/kanister/archive/refs/tags/$pkgver.tar.gz"
+builddir="$srcdir/kanister-$pkgver"
+options="net" # download Go modules
+
+export GOCACHE="${GOCACHE:-"$srcdir/go-cache"}"
+export GOTMPDIR="${GOTMPDIR:-"$srcdir"}"
+export GOMODCACHE="${GOMODCACHE:-"$srcdir/go"}"
+
+build() {
+	local _goldflags="
+	-X github.com/kanisterio/kanister/pkg/version.VERSION=$pkgver
+	-X github.com/kanisterio/kanister/pkg/version.GIT_COMMIT=AlpineLinux
+	-X github.com/kanisterio/kanister/pkg/version.BUILD_DATE=$(date -u "+%Y-%m-%dT%TZ" ${SOURCE_DATE_EPOCH:+-d @$SOURCE_DATE_EPOCH})
+	"
+	for binary in kanctl kando; do
+		go build -v -o $binary \
+			-ldflags "$_goldflags" \
+			./cmd/$binary
+
+		for shell in bash fish zsh; do
+			./$binary completion $shell > $binary.$shell
+		done
+	done
+}
+
+check() {
+	# Only run tests for the built binaries.
+	# Some of the other tests require a Kubernetes cluster to run
+	for binary in kanctl kando; do
+		go test ./pkg/$binary/...
+	done
+}
+
+package() {
+	for binary in kanctl kando; do
+		install -Dm755 $binary -t "$pkgdir"/usr/bin/
+
+		install -Dm644 $binary.bash \
+			"$pkgdir"/usr/share/bash-completion/completions/$binary
+		install -Dm644 $binary.fish \
+			"$pkgdir"/usr/share/fish/vendor_completions.d/$binary.fish
+		install -Dm644 $binary.zsh \
+			"$pkgdir"/usr/share/zsh/site-functions/_$binary
+	done
+}
+
+sha512sums="
+859a7b93148be2058e9a94c7f38e079f2c4741ff2e7f8f417b6728cae2ec6621be42d68fc31fdb22a0a95673b410a7945774570e4a840c520118513e78f70d95  kanister-tools-0.107.0.tar.gz
+"

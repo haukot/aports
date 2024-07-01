@@ -1,0 +1,42 @@
+# Maintainer: Michał Polański <michal@polanski.me>
+pkgname=biome
+pkgver=1.6.0
+pkgrel=0
+pkgdesc="Toolchain of the web"
+url="https://biomejs.dev/"
+license="MIT"
+arch="aarch64 x86_64" # architectures supported by upstream
+makedepends="cargo cargo-auditable"
+source="https://github.com/biomejs/biome/archive/cli/v$pkgver/biome-$pkgver.tar.gz"
+builddir="$srcdir/biome-cli-v$pkgver"
+
+prepare() {
+	default_prepare
+
+	cargo fetch --target="$CTARGET" --locked
+
+	git init
+	git config --local user.name "example"
+	git config --local user.email "example@example.com"
+	git add .
+	git commit -m "needed for symlink tests"
+}
+
+build() {
+	BIOME_VERSION="$pkgver" cargo auditable build -p biome_cli --frozen --release
+}
+
+check() {
+	cargo test -p biome_cli --frozen -- \
+		--skip commands::check::max_diagnostics_default \
+		--skip commands::ci::max_diagnostics \
+		--skip commands::ci::max_diagnostics_default
+}
+
+package() {
+	install -Dm755 target/release/$pkgname -t "$pkgdir"/usr/bin/
+}
+
+sha512sums="
+2d650d072e35662b2cab9250ef3aaaabc19e9d4eaf4526e6148cb27cefa2f8d82d37a05d64852120635e24a1e846cecbc21c658d25d40adf7d35b1b8e10adf3a  biome-1.6.0.tar.gz
+"

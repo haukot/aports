@@ -1,0 +1,38 @@
+# Contributor: Natanael Copa <ncopa@alpinelinux.org>
+# Maintainer: Natanael Copa <ncopa@alpinelinux.org>
+pkgname=py3-parsing
+_pkgname=pyparsing
+pkgver=3.1.2
+pkgrel=1
+pkgdesc="Object-oriented approach to text processing"
+url="https://github.com/pyparsing/pyparsing"
+arch="noarch"
+license="MIT"
+depends="python3"
+makedepends="py3-flit-core py3-gpep517"
+subpackages="$pkgname-pyc"
+source="https://files.pythonhosted.org/packages/source/${_pkgname:0:1}/$_pkgname/$_pkgname-$pkgver.tar.gz"
+builddir="$srcdir"/$_pkgname-$pkgver
+options="!check" # too low level, and needs unpackaged railroad
+
+replaces="py-parsing" # Backwards compatibility
+provides="py-parsing=$pkgver-r$pkgrel" # Backwards compatibility
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	python3 -m unittest
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/pyparsing-$pkgver-py3-none-any.whl
+}
+
+sha512sums="
+1134949f3576edbec4438eefe952eb5cc6e734fb060905d714b6a77f71e90d364b01345df5e7b8fb5ffa798c530be9c65f6d152b3f591cba787660c4dd8894d2  pyparsing-3.1.2.tar.gz
+"

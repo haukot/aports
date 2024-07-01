@@ -1,0 +1,31 @@
+# Contributor: Rasmus Thomsen <oss@cogitri.dev>
+# Maintainer: team/gnome <ablocorrea@hotmail.com>
+pkgname=gnome-tour
+pkgver=46.0
+pkgrel=0
+pkgdesc="GNOME Tour & Greeter"
+url="https://gitlab.gnome.org/GNOME/gnome-tour"
+# loongarch64: fails to build vendor/libc
+arch="all !loongarch64"
+license="GPL-3.0-or-later"
+makedepends="meson cargo glib-dev gtk4.0-dev libadwaita-dev desktop-file-utils"
+checkdepends="appstream-glib desktop-file-utils"
+subpackages="$pkgname-lang"
+source="https://download.gnome.org/sources/gnome-tour/${pkgver%.*}/gnome-tour-$pkgver.tar.xz"
+
+build() {
+	abuild-meson . output
+	meson compile -C output
+}
+
+check() {
+	meson test --no-rebuild --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="
+35e27acc1f7e844c6e3af5b93cc4af7dd9996e723fd1f56ff0cd346c32f034a1286329adcec4feb9a9b7cf2e7c05ba42e9eaa4c3f9c46ee504f1a4afdc79f26d  gnome-tour-46.0.tar.xz
+"

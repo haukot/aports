@@ -1,0 +1,40 @@
+# Maintainer: Krystian Chachuła <krystian@krystianch.com>
+pkgname=qsynth
+pkgver=0.9.13
+pkgrel=0
+pkgdesc="Qt GUI Interface for FluidSynth"
+url="https://qsynth.sourceforge.io/"
+arch="all"
+license="GPL-2.0-or-later"
+makedepends="
+	cmake
+	samurai
+	qt6-qtbase-dev
+	qt6-qttools-dev
+	qt6-qtsvg-dev
+	fluidsynth-dev
+"
+subpackages="$pkgname-doc"
+source="https://downloads.sourceforge.net/project/qsynth/qsynth/$pkgver/qsynth-$pkgver.tar.gz"
+options="!check" # no tests
+
+build() {
+	if [ "$CBUILD" != "$CHOST" ]; then
+		CMAKE_CROSSOPTS="-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_HOST_SYSTEM_NAME=Linux"
+	fi
+	cmake -B build -G Ninja \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_SHARED_LIBS=ON \
+		-DCMAKE_BUILD_TYPE=None \
+		$CMAKE_CROSSOPTS
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+8249438429191a2beb381af9f6fc6bc0d88711c2590379bfa10c558464c562f28453dacec8edbe1afdc590ee437530cefac211b272553cf8acc266706894f17c  qsynth-0.9.13.tar.gz
+"

@@ -1,0 +1,77 @@
+# Contributor: Celeste <cielesti@protonmail.com>
+# Maintainer: Celeste <cielesti@protonmail.com>
+pkgname=jujutsu
+pkgver=0.18.0
+pkgrel=0
+pkgdesc="Git-compatible distributed version control system"
+url="https://github.com/martinvonz/jj"
+# armhf, armv7, x86: tests fail
+arch="all !armhf !armv7 !x86"
+license="Apache-2.0"
+makedepends="
+	cargo
+	cargo-auditable
+	libgit2-dev
+	libssh-dev
+	openssl-dev
+	zstd-dev
+	"
+checkdepends="openssh-keygen"
+subpackages="
+	$pkgname-doc
+	$pkgname-bash-completion
+	$pkgname-fish-completion
+	$pkgname-zsh-completion
+	"
+source="https://github.com/martinvonz/jj/archive/v$pkgver/jujutsu-$pkgver.tar.gz"
+builddir="$srcdir/jj-$pkgver"
+
+export LIBGIT2_NO_VENDOR=1
+export LIBSSH2_SYS_USE_PKG_CONFIG=1
+export ZSTD_SYS_USE_PKG_CONFIG=1
+
+prepare() {
+	default_prepare
+
+	cargo fetch --target="$CTARGET" --locked
+}
+
+build() {
+	cargo auditable build --frozen --release --bin jj
+
+	for shell in bash fish zsh; do
+		./target/release/jj util completion $shell > jj.$shell
+	done
+
+	./target/release/jj util mangen > jj.1
+}
+
+check() {
+	# test_gc: flaky on s390x
+	case "$CARCH" in
+	s390x)
+		_test_args="-- --skip test_git_backend::test_gc"
+		;;
+	esac
+
+	cargo test --frozen $_test_args
+}
+
+package() {
+	install -Dvm755 target/release/jj -t "$pkgdir"/usr/bin/
+
+	install -Dvm644 jj.bash \
+		"$pkgdir"/usr/share/bash-completion/completions/jj
+	install -Dvm644 jj.fish \
+		"$pkgdir"/usr/share/fish/vendor_completions.d/jj.fish
+	install -Dvm644 jj.zsh \
+		"$pkgdir"/usr/share/zsh/site-functions/_jj
+
+	install -Dvm644 jj.1 -t "$pkgdir"/usr/share/man/man1/
+	install -dvm755 "$pkgdir"/usr/share/doc
+	cp -av docs "$pkgdir"/usr/share/doc/$pkgname
+}
+
+sha512sums="
+24afcf6fd2d8f5fd91500c9bad768bc99e2496afd0fdb33a36861d105656c74bae92cfdfdfbd3b3df21b0d5f8151c098fbfdfb00dcbfd8cb41518f754f5babca  jujutsu-0.18.0.tar.gz
+"

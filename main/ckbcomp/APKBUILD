@@ -1,0 +1,22 @@
+# Maintainer: Natanael Copa <ncopa@alpinelinux.org>
+pkgname=ckbcomp
+pkgver=1.228
+pkgrel=0
+pkgdesc="Compile a XKB keyboard description to a keymap"
+url="https://salsa.debian.org/installer-team/console-setup"
+arch="noarch"
+license="GPL-2.0-or-later"
+depends="perl"
+options="!check"
+subpackages="$pkgname-doc"
+source="https://salsa.debian.org/installer-team/console-setup/-/archive/$pkgver/console-setup-$pkgver.tar.gz"
+builddir="$srcdir"/console-setup-$pkgver
+
+package() {
+	install -D -m755 Keyboard/$pkgname $pkgdir/usr/bin/$pkgname
+	install -D -m644 man/$pkgname.1 $pkgdir/usr/share/man/man1/$pkgname.1
+}
+
+sha512sums="
+c624b0bf0a7093adbbbac7ae6abe05387b47bc7dbd60b51e8fdf012d64970fce0d2aeb8e3a619b3cdd8a2fa9ab74175ae510e5a5b7eec5777dffe16dd90a1e4c  console-setup-1.228.tar.gz
+"

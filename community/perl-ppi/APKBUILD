@@ -1,0 +1,34 @@
+# Contributor: Duncan Bellamy <dunk@denkimushi.com>
+# Maintainer: Duncan Bellamy <dunk@denkimushi.com>
+pkgname=perl-ppi
+pkgver=1.278
+pkgrel=0
+pkgdesc="Parse, Analyze and Manipulate Perl (without perl)"
+url="https://metacpan.org/pod/PPI"
+arch="noarch"
+license="Artistic-1.0-Perl"
+depends="perl-clone perl-params-util perl-task-weaken"
+checkdepends="perl-class-inspector perl-test-deep perl-test-object perl-test-subcalls"
+subpackages="$pkgname-doc"
+source="https://cpan.metacpan.org/authors/id/O/OA/OALDERS/PPI-$pkgver.tar.gz"
+builddir="$srcdir/PPI-$pkgver"
+
+build() {
+	export CFLAGS=$(perl -MConfig -E 'say $Config{ccflags}')
+	PERL_MM_USE_DEFAULT=1 perl -I. Makefile.PL INSTALLDIRS=vendor
+	make
+}
+
+check() {
+	export CFLAGS=$(perl -MConfig -E 'say $Config{ccflags}')
+	make test
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+	find "$pkgdir" \( -name perllocal.pod -o -name .packlist \) -delete
+}
+
+sha512sums="
+0b63a9d983544b12b33d1207326fa1a3700720067242198b50ea452a988d85f3a96e44f22eaa79e542af81dbe7f98d8dea9335e4ccfd69a1e911ac017f3caa8e  PPI-1.278.tar.gz
+"

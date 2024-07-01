@@ -1,0 +1,33 @@
+# Contributor: Díaz Urbaneja Diego <sodomon2@gmail.com>
+# Maintainer: Díaz Urbaneja Diego <sodomon2@gmail.com>
+pkgname=goxel
+pkgver=0.14.0
+pkgrel=0
+pkgdesc="Open source 3D voxel editor"
+url="https://goxel.xyz/"
+arch="all"
+license="GPL-3.0-only"
+install="$pkgname.post-install"
+makedepends="scons glfw-dev libpng-dev"
+options="!check" # check function not implemented
+source="https://github.com/guillaumechereau/goxel/archive/refs/tags/v$pkgver/goxel-$pkgver.tar.gz
+	goxel.desktop
+	"
+
+build() {
+	CFLAGS="$CFLAGS -flto=auto" \
+	CXXFLAGS="$CXXFLAGS -flto=auto" \
+	scons mode=release werror=false -j ${JOBS:-2}
+}
+
+package() {
+	install -Dm775 goxel "$pkgdir"/usr/bin/goxel
+
+	install -Dm644 icon.png "$pkgdir"/usr/share/icons/hicolor/1024x1024/apps/goxel.png
+	install -Dm644 "$srcdir"/goxel.desktop "$pkgdir"/usr/share/applications/goxel.desktop
+}
+
+sha512sums="
+0be5b347e67eedb544c42ed4d9427fd704b50cb21132922388d76b7fb8baad2d7551b98374ccdfdbc369f79b6398dc13251dbbaa72c31669378358d0fc010ec7  goxel-0.14.0.tar.gz
+10662d11d73a51d06db753b4f1727e05b1b9a5ef63ee4321cd4f445806f6162af010f89d7f98ff3ba25df14df1fb9bc8693a98d93206af208fdb28b7a49e46e9  goxel.desktop
+"

@@ -1,0 +1,48 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=qt6
+pkgname=qt6-qtlottie
+pkgver=6.6.3
+pkgrel=0
+pkgdesc="A family of player software for a certain json-based file format for describing 2d vector graphics animations"
+url="https://qt.io/"
+arch="all"
+license="LGPL-2.1-only AND LGPL-3.0-only AND GPL-3.0-only AND Qt-GPL-exception-1.0"
+depends_dev="
+	qt6-qtbase-dev
+	qt6-qtdeclarative-dev
+	"
+makedepends="$depends_dev
+	cmake
+	perl
+	samurai
+	"
+subpackages="$pkgname-dev"
+options="!check" # No tests
+builddir="$srcdir/qtlottie-everywhere-src-${pkgver/_/-}"
+
+case $pkgver in
+	*_alpha*|*_beta*|*_rc*) _rel=development_releases;;
+	*) _rel=official_releases;;
+esac
+
+source="https://download.qt.io/$_rel/qt/${pkgver%.*}/${pkgver/_/-}/submodules/qtlottie-everywhere-src-${pkgver/_/-}.tar.xz"
+
+build() {
+	export CFLAGS="$CFLAGS -g1 -flto=auto"
+	export CXXFLAGS="$CXXFLAGS -g1 -flto=auto"
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+4ea0c56d5c2d12bda1d3ee0e5d820000f8ebef36ca957d69de9f40180cb07dab4f2301b4e3b06a01e33339da4b326a26d7d43de8566e6c42a42b322aeaf32a4b  qtlottie-everywhere-src-6.6.3.tar.xz
+"

@@ -1,0 +1,34 @@
+# Contributor: Leo <thinkabit.ukim@gmail.com>
+# Maintainer: Michał Polański <michal@polanski.me>
+pkgname=py3-tomlkit
+_realname=tomlkit
+pkgver=0.12.5
+pkgrel=0
+pkgdesc="Style-preserving TOML library for Python"
+url="https://github.com/sdispater/tomlkit"
+arch="noarch"
+license="MIT"
+makedepends="py3-gpep517 py3-installer py3-poetry-core"
+checkdepends="py3-pytest py3-yaml"
+subpackages="$pkgname-pyc"
+source="https://files.pythonhosted.org/packages/source/${_realname:0:1}/$_realname/$_realname-$pkgver.tar.gz"
+builddir="$srcdir/$_realname-$pkgver"
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	pytest
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/tomlkit-$pkgver-py3-none-any.whl
+}
+
+sha512sums="
+85fba0018059c72f483251e53c039ede4ed630dd31afc58a1555705281a42c090aee2d8c25234b8700ff5f3a766313d7c9c716d7224f608f22f836c9e701c251  tomlkit-0.12.5.tar.gz
+"

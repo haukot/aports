@@ -1,0 +1,66 @@
+# Contributor: Carlo Landmeter <clandmeter@alpinelinux.org>
+# Maintainer: Carlo Landmeter <clandmeter@alpinelinux.org>
+pkgname=ocrmypdf
+pkgver=16.1.1
+pkgrel=0
+pkgdesc="Add OCR text layer to scanned PDF files"
+url="https://github.com/ocrmypdf/OCRmyPDF"
+# s390x, armhf, x86, ppc64le: tesseract-ocr
+# riscv64, loongarch64: tests fails
+arch="noarch !s390x !armhf !x86 !ppc64le !riscv64 !loongarch64"
+license="MIT"
+depends="
+	ghostscript
+	jbig2enc
+	leptonica
+	pngquant
+	py3-deprecation
+	py3-img2pdf
+	py3-packaging
+	py3-pdfminer
+	py3-pikepdf
+	py3-pillow
+	py3-pluggy
+	py3-reportlab
+	py3-rich
+	python3
+	qpdf
+	tesseract-ocr
+	unpaper
+	"
+makedepends="
+	py3-gpep517
+	py3-setuptools_scm
+	py3-wheel
+	"
+checkdepends="
+	py3-hypothesis
+	py3-pytest
+	py3-pytest-cov
+	py3-pytest-xdist
+	tesseract-ocr-data-eng
+	tesseract-ocr-data-osd
+	"
+subpackages="$pkgname-pyc"
+source="https://files.pythonhosted.org/packages/source/o/ocrmypdf/ocrmypdf-$pkgver.tar.gz"
+
+build() {
+	export SETUPTOOLS_SCM_PRETEND_VERSION=$pkgver
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	PYTHONPATH=src \
+	pytest
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/ocrmypdf*.whl
+}
+
+sha512sums="
+79f89b9dad53d69dc8954b13958091c2a43775dbc22efb95d7c1d84bb1a079d90a71ceffd1020cf2e5065518213da260264f34ff6babd7a185e9081e8a3b2a6e  ocrmypdf-16.1.1.tar.gz
+"

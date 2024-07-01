@@ -1,0 +1,34 @@
+# Maintainer: Hoang Nguyen <folliekazetani@protonmail.com>
+pkgname=jwt-cli
+pkgver=6.0.0
+pkgrel=0
+pkgdesc="Super fast CLI tool to decode and encode JWTs"
+url="https://github.com/mike-engel/jwt-cli"
+# blocked by ring crate
+arch="all !s390x !ppc64le !riscv64"
+license="MIT"
+makedepends="cargo cargo-auditable"
+source="$pkgname-$pkgver.tar.gz::https://github.com/mike-engel/jwt-cli/archive/refs/tags/$pkgver.tar.gz"
+
+
+prepare() {
+	default_prepare
+
+	cargo fetch --target="$CTARGET" --locked
+}
+
+build() {
+	cargo auditable build --frozen --release
+}
+
+check() {
+	cargo test --frozen
+}
+
+package() {
+	install -Dm755 target/release/jwt -t "$pkgdir"/usr/bin/
+}
+
+sha512sums="
+2d0b7dfd98bc16448d1bd67763d7deea4be6ad5069134deacf6a3dcd5c64cf88f7b01fe09bdb03fc80845889706e3e172755b054f349a4c0141adafcd4458943  jwt-cli-6.0.0.tar.gz
+"

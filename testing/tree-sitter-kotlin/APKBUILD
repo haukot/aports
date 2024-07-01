@@ -1,0 +1,25 @@
+# Contributor: Matthias Ahouansou <matthias@ahouansou.cz>
+# Maintainer: Matthias Ahouansou <matthias@ahouansou.cz>
+pkgname=tree-sitter-kotlin
+pkgver=0.3.6
+pkgrel=0
+pkgdesc="Kotlin grammar for Tree-Sitter"
+url="https://github.com/fwcd/tree-sitter-kotlin"
+arch="all"
+license="MIT"
+makedepends="tree-sitter-dev"
+install_if="tree-sitter-grammars"
+source="$pkgname-$pkgver.tar.gz::https://github.com/fwcd/tree-sitter-kotlin/archive/refs/tags/$pkgver.tar.gz"
+options="!check" # no tests for shared lib
+
+build() {
+	abuild-tree-sitter build
+}
+
+package() {
+	DESTDIR="$pkgdir" abuild-tree-sitter install
+}
+
+sha512sums="
+adff74105333087380285096f3bb2a1f43efa52df732d266cf5a714a1e3c77aa1d59c12415c07f3b8c17d46352359874f50fce9946c91ba9b812576e2e2cd93c  tree-sitter-kotlin-0.3.6.tar.gz
+"

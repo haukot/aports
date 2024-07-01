@@ -1,0 +1,53 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: team/kde <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=kde-frameworks
+pkgname=ksvg
+pkgver=6.3.0
+pkgrel=1
+pkgdesc="Configuration system"
+arch="all !armhf" # armhf blocked by extra-cmake-modules
+url="https://community.kde.org/Frameworks"
+license="LGPL-2.0-or-later AND LGPL-2.0-only AND LGPL-2.1-or-later"
+makedepends="
+	doxygen
+	extra-cmake-modules
+	graphviz
+	qt6-qtdeclarative-dev
+	qt6-qttools-dev
+	karchive-dev
+	kconfig-dev
+	kcolorscheme-dev
+	kcoreaddons-dev
+	kguiaddons-dev
+	kirigami-dev
+	samurai
+	"
+checkdepends="xvfb-run"
+subpackages="$pkgname-dev $pkgname-doc"
+_repo_url="https://invent.kde.org/frameworks/ksvg.git"
+source="https://download.kde.org/stable/frameworks/${pkgver%.*}/ksvg-$pkgver.tar.xz
+	0001-ksvg-Restore-proper-devicepixelratio-when-extracting-from-cache.patch
+	"
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_QCH=ON
+	cmake --build build
+}
+
+check() {
+	xvfb-run ctest --test-dir build --output-on-failure -E 'ksvg(core-(ksvgtest|kdesktopfiletest|test_kconf_update)|gui-kstandardshortcutwatchertest)'
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+sha512sums="
+8026f2768c59e503e4f1064483c53732469309384763db466ea72eff696a7aa336704a5d7525625bb2845469d34e9e745f8bb8e57cbd2bb76ddc1f6fe3748256  ksvg-6.3.0.tar.xz
+565ade2e0d2eae94eeacd43e4bedcfa02f474d668a8c8dc2d400f4c4b1edf39a2291f3389af0540c1260268ba1be8955ce316cd9022429e7f775995313a21ed4  0001-ksvg-Restore-proper-devicepixelratio-when-extracting-from-cache.patch
+"

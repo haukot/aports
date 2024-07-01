@@ -1,0 +1,34 @@
+# Contributor: Lindsay Zhou <i@lin.moe>
+# Maintainer: Lindsay Zhou <i@lin.moe>
+pkgname=fcitx5-table-other
+pkgver=5.1.2
+pkgrel=0
+pkgdesc="other-table input method support for fcitx5"
+url="https://github.com/fcitx/fcitx5-table-other"
+arch="noarch"
+license="GPL-3.0-only"
+makedepends="
+	cmake
+	extra-cmake-modules
+	gettext-dev
+	fcitx5-dev
+	libime-dev
+	samurai
+	"
+source="$pkgname-$pkgver.tar.gz::https://github.com/fcitx/fcitx5-table-other/archive/refs/tags/$pkgver.tar.gz"
+options="!check" # no tests
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_PREFIX=/usr
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+da6d531eeb23d8a2758365ccd9ba81fb6dabe5eb73b826424f77e751dc5a325197b277e7ec28eb3938054a34033fffb758a558d0da48986effa2ad46de78e159  fcitx5-table-other-5.1.2.tar.gz
+"

@@ -1,0 +1,82 @@
+# Contributor: Rasmus Thomsen <oss@cogitri.dev>
+# Maintainer: Natanael Copa <ncopa@alpinelinux.org>
+pkgname=enchant2
+pkgver=2.8.1
+pkgrel=0
+pkgdesc="wrapper library for generic spell checking (v2)"
+url="https://abiword.github.io/enchant/"
+arch="all"
+license="LGPL-2.1-or-later"
+makedepends="
+	aspell-dev
+	dbus-glib-dev
+	file
+	gettext-dev
+	glib-dev
+	groff
+	hunspell-dev
+	nuspell-dev
+	"
+subpackages="
+	$pkgname-libs
+	$pkgname-dev
+	$pkgname-doc
+	$pkgname-data
+	$pkgname-aspell
+	$pkgname-hunspell
+	$pkgname-nuspell
+	"
+options="!check" # needs unpackaged unittest-cpp
+source="https://github.com/AbiWord/enchant/releases/download/v$pkgver/enchant-$pkgver.tar.gz"
+builddir="$srcdir/enchant-$pkgver"
+
+build() {
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--disable-static \
+		--with-aspell \
+		--with-hunspell \
+		--with-nuspell
+	make
+}
+
+check() {
+	make check
+}
+
+package() {
+	depends="
+		$pkgname-aspell=$pkgver-r$pkgrel
+		$pkgname-hunspell=$pkgver-r$pkgrel
+		$pkgname-nuspell=$pkgver-r$pkgrel
+		"
+	make DESTDIR="$pkgdir" install
+}
+
+data() {
+	amove usr/share/enchant-2
+}
+
+aspell() {
+	depends="$pkgname-data=$pkgver-r$pkgrel"
+	install_if="$pkgname-libs=$pkgver-r$pkgrel aspell"
+	amove usr/lib/enchant-2/enchant_aspell.so
+}
+
+hunspell() {
+	depends="$pkgname-data=$pkgver-r$pkgrel"
+	install_if="$pkgname-libs=$pkgver-r$pkgrel hunspell"
+	amove usr/lib/enchant-2/enchant_hunspell.so
+}
+
+nuspell() {
+	depends="$pkgname-data=$pkgver-r$pkgrel"
+	install_if="$pkgname-libs=$pkgver-r$pkgrel nuspell"
+	amove usr/lib/enchant-2/enchant_nuspell.so
+}
+
+sha512sums="
+21eabd652bbb54c6b0d644b4ca053cd317556869b3267bfab90fdddcac37bc45c5b67f2d4f5abd381022f423bb3afbe5ae6a496d363bf2ba918c79efbc3b7ea2  enchant-2.8.1.tar.gz
+"

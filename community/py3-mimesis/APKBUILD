@@ -1,0 +1,37 @@
+# Contributor: Iztok Fister, Jr. <iztok@iztok-jr-fister.eu>
+# Maintainer: Iztok Fister, Jr. <iztok@iztok-jr-fister.eu>
+pkgname=py3-mimesis
+pkgver=17.0.0
+pkgrel=0
+pkgdesc="The Fake Data Generator"
+url="https://mimesis.name"
+arch="noarch"
+license="MIT"
+depends="python3"
+makedepends="py3-gpep517 py3-poetry-core"
+checkdepends="py3-colorama py3-pytest-xdist py3-validators py3-tz"
+subpackages="$pkgname-pyc"
+source="https://github.com/lk-geimfari/mimesis/archive/v$pkgver/mimesis-$pkgver.tar.gz"
+builddir="$srcdir/mimesis-$pkgver"
+options="!check" # temporary fix - missing test dependency
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	python3 -m venv --clear --without-pip --system-site-packages .testenv
+	.testenv/bin/python3 -m installer .dist/*.whl
+	.testenv/bin/python3 -m pytest -n auto -k 'not test_schema and not test_internet' --ignore=tests/test_builtins/test_usa_spec.py
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/*.whl
+}
+
+sha512sums="
+05c36421650a359638c6404e7aa8c826b9035d5e312d31832a13dd3c4ccaecacfa1b2f75f16073ac233f17eba3f95ae09baa75d709305ddc39ee3a8dc438297d  mimesis-17.0.0.tar.gz
+"

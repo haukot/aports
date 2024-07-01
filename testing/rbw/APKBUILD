@@ -1,0 +1,52 @@
+# Maintainer: crapStone <crapstone01@gmail.com>
+pkgname=rbw
+pkgver=1.11.0
+pkgrel=0
+pkgdesc="Unofficial command line client for Bitwarden."
+url="https://git.tozt.net/rbw"
+# loongarch64: blocked by libc crate
+arch="all !s390x !riscv64 !ppc64le !loongarch64" # ring
+license="MIT"
+depends="pinentry"
+makedepends="rust cargo cargo-auditable"
+subpackages="
+	$pkgname-bash-completion
+	$pkgname-fish-completion
+	$pkgname-zsh-completion
+	"
+source="https://git.tozt.net/rbw/snapshot/rbw-$pkgver.tar.gz"
+export CARGO_HOME="$srcdir"/cargo
+
+
+prepare() {
+	default_prepare
+	cargo fetch --target="$CTARGET" --locked
+}
+
+build() {
+	cargo auditable build --frozen --release
+
+	target/release/rbw gen-completions bash > rbw.bash
+	target/release/rbw gen-completions fish > rbw.fish
+	target/release/rbw gen-completions zsh > _rbw
+}
+
+check() {
+	cargo test --frozen
+}
+
+package() {
+	install -Dm755 target/release/rbw "$pkgdir"/usr/bin/rbw
+	install -Dm755 target/release/rbw-agent "$pkgdir"/usr/bin/rbw-agent
+
+	install -Dm644 rbw.bash \
+		"$pkgdir"/usr/share/bash-completion/completions/rbw
+	install -Dm644 rbw.fish \
+		"$pkgdir"/usr/share/fish/vendor_completions.d/rbw.fish
+	install -Dm644 _rbw \
+		"$pkgdir"/usr/share/zsh/site-functions/_rbw
+}
+
+sha512sums="
+1a29588e4896e6e7ea7b6d3a04205fd07cb54ea8478d3fe5fc2330b99b91addfebf8863a7554e92564765d16bd88f2bc947bfd90cdb036f8405a72203b806bf2  rbw-1.11.0.tar.gz
+"

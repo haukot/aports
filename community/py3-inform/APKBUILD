@@ -1,0 +1,46 @@
+# Contributor: Andy Hawkins <andy@gently.org.uk>
+# Maintainer: Andy Hawkins <andy@gently.org.uk>
+pkgname=py3-inform
+pkgver=1.30
+pkgrel=0
+pkgdesc="Print & Logging Utilities"
+url="https://inform.readthedocs.io/"
+arch="noarch"
+license="GPL-3.0-or-later"
+depends="
+	python3
+	py3-arrow
+	py3-six
+	"
+makedepends="
+	py3-flit-core
+	py3-gpep517
+	"
+checkdepends="
+	py3-pytest
+	py3-pytest-cov
+	py3-hypothesis
+	py3-num2words
+	"
+subpackages="$pkgname-pyc"
+source="https://github.com/KenKundert/inform/archive/v$pkgver/inform-v$pkgver.tar.gz"
+builddir="$srcdir/inform-$pkgver"
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	PYTHONPATH="$PWD/build/lib" pytest
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/inform-$pkgver*-py3-none-any.whl
+}
+
+sha512sums="
+c3bf9a2e9fff1e69a159f89589e104b90fc8bfcb54023180c1f70ec451bf217e43816ac06deb1081d7149be8bd05d460dc48b5d2c1e572cba2cab4c9ac949d33  inform-v1.30.tar.gz
+"

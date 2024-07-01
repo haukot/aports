@@ -1,0 +1,58 @@
+# Contributor: Duncan Bellamy <dunk@denkimushi.com>
+# Maintainer: Duncan Bellamy <dunk@denkimushi.com>
+# based on arch linux PKGBUILD
+pkgname=apache-orc
+pkgver=2.0.1
+pkgrel=0
+pkgdesc="the smallest, fastest columnar storage for Hadoop workloads"
+url="https://orc.apache.org/"
+arch="all"
+license="Apache-2.0"
+# tests require /etc/localtime
+options="!check"
+makedepends="
+	cmake
+	lz4-dev
+	protobuf-dev
+	samurai
+	snappy-dev
+	zlib-dev
+	zlib-static
+	zstd-dev
+	"
+subpackages="$pkgname-dev $pkgname-doc"
+source="https://downloads.apache.org/orc/orc-$pkgver/orc-$pkgver.tar.gz"
+builddir="$srcdir/orc-$pkgver"
+
+build() {
+	if [ "$CBUILD" != "$CHOST" ]; then
+		CMAKE_CROSSOPTS="-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_HOST_SYSTEM_NAME=Linux"
+	fi
+	cmake -B build -G Ninja \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DBUILD_SHARED_LIBS=True \
+		-DCMAKE_BUILD_TYPE=MinSizeRel \
+		-DCMAKE_CXX_STANDARD=17 \
+		-DSNAPPY_HOME=/usr \
+		-DZLIB_HOME=/usr \
+		-DLZ4_HOME=/usr \
+		-DGTEST_HOME=/usr \
+		-DZSTD_HOME=/usr \
+		-DPROTOBUF_HOME=/usr \
+		-DBUILD_LIBHDFSPP=OFF \
+		-DBUILD_JAVA=OFF \
+		-DINSTALL_VENDORED_LIBS=OFF \
+		-DBUILD_POSITION_INDEPENDENT_LIB=ON \
+		-DSTOP_BUILD_ON_WARNING=OFF \
+		-DBUILD_CPP_TESTS=OFF \
+		$CMAKE_CROSSOPTS
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+c9c2a656714a7b9767cc489f91257af1d13d9284b7745522c72354290aa4253195035ed129d472c702e14a8ae8040745b37ca7d0b7473511bdaec63fae24625b  orc-2.0.1.tar.gz
+"

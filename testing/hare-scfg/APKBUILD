@@ -1,0 +1,28 @@
+# Contributor: Francesco Camuffo <dev@fmac.xyz>
+# Contributor: fossdd <fossdd@pwned.life>
+# Maintainer: fossdd <fossdd@pwned.life>
+pkgname=hare-scfg
+pkgver=0.24.0
+pkgrel=0
+pkgdesc="scfg implementation for Hare"
+url="https://git.sr.ht/~chrisppy/hare-scfg"
+arch="noarch !armhf !armv7 !ppc64le !s390x !x86 !loongarch64" # blocked by hare
+license="MPL-2.0"
+makedepends="hare"
+source="$pkgname-$pkgver.tar.gz::https://git.sr.ht/~chrisppy/hare-scfg/archive/$pkgver.tar.gz"
+
+build() {
+	make -j1 PREFIX=/usr
+}
+
+check() {
+	make check
+}
+
+package() {
+	make DESTDIR="$pkgdir" PREFIX=/usr install
+}
+
+sha512sums="
+30a1b4dd38f76cb82b91ee8b2bc230e889d34f82711214becde1bb5a133b4aafe1a020bfaf830255a1aa9a1020ed0603cd151a7ef4feb32ce33a38e74adab668  hare-scfg-0.24.0.tar.gz
+"

@@ -1,0 +1,46 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=py3-ovos-phal-plugin-connectivity-events
+pkgver=0.0.3
+pkgrel=1
+pkgdesc="Monitors network state and exposes it via messagebus"
+url="https://github.com/OpenVoiceOS/ovos-PHAL-plugin-connectivity-events"
+# loongarch64: blocked by py3-ovos-plugin-manager
+arch="noarch !loongarch64"
+license="Apache-2.0"
+depends="
+	py3-ovos-bus-client
+	py3-ovos-plugin-manager
+	"
+makedepends="
+	py3-gpep517
+	py3-setuptools
+	py3-wheel
+	"
+checkdepends="
+	py3-pytest
+	"
+subpackages="$pkgname-pyc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/OpenVoiceOS/ovos-PHAL-plugin-connectivity-events/archive/refs/tags/$pkgver.tar.gz"
+builddir="$srcdir/ovos-PHAL-plugin-connectivity-events-$pkgver"
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	python3 -m venv --clear --without-pip --system-site-packages .testenv
+	.testenv/bin/python3 -m installer .dist/*.whl
+	.testenv/bin/python3 -m pytest
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/*.whl
+}
+
+sha512sums="
+7ba4a960fcc8b48cc793d266b64cb326d9a7a310d45056c4fb777df34e0473aa3bab375bef268d399d83278dc31ab96fd1a3f3b20a80febf3a6e94d97c0362ef  py3-ovos-phal-plugin-connectivity-events-0.0.3.tar.gz
+"

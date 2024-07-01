@@ -1,0 +1,46 @@
+# Maintainer: Patrycja Rosa <alpine@ptrcnull.me>
+pkgname=py3-truststore
+pkgver=0.9.1
+pkgrel=0
+pkgdesc="Verify certificates using OS trust stores"
+url="https://github.com/sethmlarson/truststore"
+arch="noarch"
+license="MIT"
+makedepends="py3-gpep517 py3-installer py3-flit-core"
+checkdepends="
+	py3-aiohttp
+	py3-flaky
+	py3-httpx
+	py3-openssl
+	py3-pytest
+	py3-pytest-asyncio
+	py3-pytest-httpserver
+	py3-requests
+	py3-trustme
+	py3-urllib3
+"
+subpackages="$pkgname-pyc"
+source="https://github.com/sethmlarson/truststore/archive/v$pkgver/py3-truststore-$pkgver.tar.gz"
+builddir="$srcdir/truststore-$pkgver"
+options="net" # checks on example.com for some reason
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	python3 -m venv --clear --without-pip --system-site-packages .testenv
+	.testenv/bin/python3 -m installer .dist/*.whl
+	.testenv/bin/python3 -m pytest
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/*.whl
+}
+
+sha512sums="
+38567198a3b0d4e9c0b3df72674f3e1fef0614ef0afa80bd7276f98c2e7ef2dc00cca92184b80a1dfe535c5d2508ebdb775e389576c2f07536838f67de1958ca  py3-truststore-0.9.1.tar.gz
+"

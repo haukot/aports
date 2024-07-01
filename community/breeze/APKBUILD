@@ -1,0 +1,70 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: team/kde <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=kde-plasma
+pkgname=breeze
+pkgver=6.0.5
+pkgrel=0
+pkgdesc="Artwork, styles and assets for the Breeze visual style for the Plasma Desktop"
+# armhf blocked by qt6-qtdeclarative
+arch="all !armhf"
+url="https://kde.org/plasma-desktop/"
+license="GPL-2.0-or-later"
+depends_dev="
+	frameworkintegration-dev
+	frameworkintegration5-dev
+	kcmutils-dev
+	kcolorscheme-dev
+	kconfig-dev
+	kconfig5-dev
+	kconfigwidgets5-dev
+	kcoreaddons-dev
+	kcoreaddons5-dev
+	kdecoration-dev
+	kguiaddons-dev
+	kguiaddons5-dev
+	ki18n-dev
+	kiconthemes-dev
+	kiconthemes5-dev
+	kirigami-dev
+	kirigami2-dev
+	kwindowsystem-dev
+	kwindowsystem5-dev
+	qt5-qtbase-dev
+	qt5-qtdeclarative-dev
+	qt5-qtx11extras-dev
+	qt6-qtbase-dev
+	qt6-qtdeclarative-dev
+	"
+makedepends="$depends_dev
+	extra-cmake-modules
+	samurai
+	"
+
+case "$pkgver" in
+	*.90*) _rel=unstable;;
+	*) _rel=stable;;
+esac
+subpackages="$pkgname-dev $pkgname-lang"
+_repo_url="https://invent.kde.org/plasma/breeze.git"
+source="https://download.kde.org/stable/plasma/$pkgver/breeze-$pkgver.tar.xz"
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=MinSizeRel \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib
+	cmake --build build
+}
+
+check() {
+	ctest --test-dir build --output-on-failure
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+sha512sums="
+3c7a79431aa918f891da8a59ef9f11b024425d4bfaa48e92730117f9d0b0ae85750456f13def90dc0c1a949cded674bff91d822028f54449aca49a9e19444ecd  breeze-6.0.5.tar.xz
+"

@@ -1,0 +1,46 @@
+# Contributor: Celeste <cielesti@protonmail.com>
+# Maintainer: Celeste <cielesti@protonmail.com>
+pkgname=rime-ls
+pkgver=0.3.0
+pkgrel=0
+pkgdesc="Language server for Rime input method engine"
+url="https://github.com/wlh320/rime-ls"
+arch="all"
+license="BSD-3-Clause"
+_llvmver=17 # keep in sync with main/rust
+makedepends="
+	cargo
+	cargo-auditable
+	clang$_llvmver-libclang
+	librime-dev
+	"
+checkdepends="rime-plum-data"
+source="https://github.com/wlh320/rime-ls/archive/v$pkgver/rime-ls-$pkgver.tar.gz
+	Cargo.lock
+	"
+
+prepare() {
+	default_prepare
+
+	cp -v "$srcdir"/Cargo.lock .
+
+	cargo fetch --target="$CTARGET" --locked
+}
+
+build() {
+	cargo auditable build --frozen --release
+}
+
+check() {
+	cargo test --frozen
+}
+
+package() {
+	install -Dvm755 target/release/rime_ls \
+		-t "$pkgdir"/usr/bin/
+}
+
+sha512sums="
+0769fe803715c67c025c301a4152b97165995f667f918759f152776879aa85d4f0ed967dbc5abe5cdb11bd177abb9a9a54ba4c38964d50b6589450a28e2c237e  rime-ls-0.3.0.tar.gz
+802d9106cba3dc2b832ca64883dfe4e8b4b9c83c9a53010a8297e2bd54f0171d512c4907c142128f1ed84103aaac25ecf955ebfcefcf3f84abcaa9156992a6e5  Cargo.lock
+"

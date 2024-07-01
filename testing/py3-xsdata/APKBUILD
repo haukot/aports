@@ -1,0 +1,55 @@
+# Contributor: Guy Godfroy <guy.godfroy@gugod.fr>
+# Maintainer: Guy Godfroy <guy.godfroy@gugod.fr>
+pkgname=py3-xsdata
+pkgver=24.6
+pkgrel=0
+pkgdesc="Naive XML & JSON Bindings for python"
+url="https://github.com/tefra/xsdata"
+arch="noarch"
+license="MIT"
+depends="
+	py3-click
+	py3-click-default-group
+	py3-docformatter
+	py3-jinja2
+	py3-toposort
+	ruff
+	"
+makedepends="
+	py3-gpep517
+	py3-setuptools
+	py3-wheel
+	"
+checkdepends="
+	py3-lxml
+	py3-pytest-benchmark
+	py3-pytest-forked
+	py3-requests
+	"
+subpackages="$pkgname-pyc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/tefra/xsdata/archive/refs/tags/v$pkgver.tar.gz
+	typing.patch
+	"
+builddir="$srcdir/xsdata-$pkgver"
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	python3 -m venv --clear --without-pip --system-site-packages .testenv
+	.testenv/bin/python3 -m installer .dist/*.whl
+	.testenv/bin/python3 -m pytest --forked
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/*.whl
+}
+
+sha512sums="
+f3075fcf8b867f4b373aed8717c9ac082200478cf622465cd2a319b2b51d69dc8606e73a7b31540f5538abc76a549d13865456f3b972c8466033501dbf2a8baf  py3-xsdata-24.6.tar.gz
+c11ac5ff6ea13e0735f96fc60f67c9dd1f4480e9e269424754012ba75064cc449232671b421610b37739c9d19b87fc760c4d3c953435787dfc6fb597c21860f1  typing.patch
+"

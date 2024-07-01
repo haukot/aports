@@ -1,0 +1,46 @@
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=qt6
+pkgname=qt6-qtshadertools
+pkgver=6.6.3
+pkgrel=0
+pkgdesc="Experimental module providing APIs and a host tool to host tool to perform graphics and compute shader conditioning"
+url="https://qt.io/"
+arch="all"
+license="LGPL-2.1-only AND LGPL-3.0-only AND GPL-3.0-only AND Qt-GPL-exception-1.0"
+depends_dev="
+	qt6-qtbase-dev
+	vulkan-headers
+	"
+makedepends="$depends_dev
+	cmake
+	perl
+	samurai
+	"
+subpackages="$pkgname-dev"
+options="!check" # No tests
+builddir="$srcdir/qtshadertools-everywhere-src-${pkgver/_/-}"
+
+case $pkgver in
+	*_alpha*|*_beta*|*_rc*) _rel=development_releases;;
+	*) _rel=official_releases;;
+esac
+
+source="https://download.qt.io/$_rel/qt/${pkgver%.*}/${pkgver/_/-}/submodules/qtshadertools-everywhere-src-${pkgver/_/-}.tar.xz
+	"
+
+build() {
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+7c6aefb6fe18e7febaa45ef84853d9400d57dfa424c7fc847dee50d155a95a54e27dafdd9a0186a8ce9476dec8b3715ad8d5b9fe6053ab777f6acb9213ab0519  qtshadertools-everywhere-src-6.6.3.tar.xz
+"

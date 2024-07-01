@@ -1,0 +1,43 @@
+# Contributor: Fabian Affolter <fabian@affolter-engineering.ch>
+# Maintainer: Fabian Affolter <fabian@affolter-engineering.ch>
+pkgname=py3-markdown
+_pkgname=Markdown
+pkgver=3.6
+pkgrel=0
+pkgdesc="Python3 implementation of Markdown"
+url="https://python-markdown.github.io/"
+arch="noarch"
+license="BSD-3-Clause"
+makedepends="
+	py3-gpep517
+	py3-setuptools
+	py3-wheel
+	"
+checkdepends="py3-coverage py3-yaml"
+subpackages="$pkgname-pyc"
+source="$pkgname-$pkgver.tar.gz::https://files.pythonhosted.org/packages/source/${_pkgname:0:1}/$_pkgname/$_pkgname-$pkgver.tar.gz"
+builddir="$srcdir/$_pkgname-$pkgver"
+
+replaces="py-markdown" # Backwards compatibility
+provides="py-markdown=$pkgver-r$pkgrel" # Backwards compatibility
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	python3 -m venv --clear --without-pip --system-site-packages .testenv
+	.testenv/bin/python3 -m installer .dist/*.whl
+	.testenv/bin/python3 -m unittest discover tests
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/*.whl
+}
+
+sha512sums="
+a523f75ea72fa71f4f0f1a59523bb1a6c5c7605ba5a0be4dc37aa5bd5c87e32563f5253404485c99c13caa27501c9003aea524154a7999a22e6497829492b997  py3-markdown-3.6.tar.gz
+"

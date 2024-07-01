@@ -1,0 +1,58 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=py3-ovos-utils
+pkgver=0.0.38
+pkgrel=0
+pkgdesc="Collection of simple utilities for use across the MyCroft ecosystem"
+url="https://github.com/OpenVoiceOS/ovos_utils"
+arch="noarch"
+license="Apache-2.0"
+depends="
+	py3-json-database
+	py3-kthread
+	py3-pexpect
+	py3-pyee
+	py3-rapidfuzz
+	py3-requests
+	py3-watchdog
+	"
+makedepends="
+	py3-gpep517
+	py3-setuptools
+	py3-wheel
+	"
+checkdepends="
+	py3-dateutil
+	py3-pytest
+	"
+subpackages="$pkgname-pyc"
+source="https://github.com/OpenVoiceOS/ovos_utils/archive/V$pkgver/ovos_utils-V$pkgver.tar.gz"
+builddir="$srcdir/ovos-utils-$pkgver"
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	python3 -m venv --clear --without-pip --system-site-packages .testenv
+	.testenv/bin/python3 -m installer .dist/*.whl
+	# Ignored tests cause circular dependencies on py3-ovos-config and ovos-messagebus
+	.testenv/bin/python3 -m pytest -k 'not test_event_scheduler_interface and not test_get_source_message' \
+		--ignore test/unittests/test_gui.py \
+		--ignore test/unittests/test_skills.py \
+		--ignore test/unittests/test_time.py \
+		--ignore test/unittests/test_events.py \
+		--ignore test/unittests/test_audio_utils.py \
+		--deselect test/unittests/test_audio_utils.py::TestPlaySounds
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/*.whl
+}
+
+sha512sums="
+44cbb67697e9bb4f103703596089ca75cb514e19ea8826e953a5a1dff0cb73bcbcb4a0717de99021ed66e5c58fc60f5aec6f1f17a47c53fc0c0f61db0a006f21  ovos_utils-V0.0.38.tar.gz
+"

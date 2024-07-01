@@ -1,0 +1,37 @@
+# Maintainer: Hoang Nguyen <folliekazetani@protonmail.com>
+pkgname=vals
+pkgver=0.35.0
+pkgrel=4
+pkgdesc="Helm-like configuration values loader with support for various sources"
+url="https://github.com/helmfile/vals"
+arch="all"
+license="Apache-2.0"
+makedepends="go"
+source="$pkgname-$pkgver.tar.gz::https://github.com/helmfile/vals/archive/refs/tags/v$pkgver.tar.gz"
+
+export GOCACHE="${GOCACHE:-"$srcdir/go-cache"}"
+export GOTMPDIR="${GOTMPDIR:-"$srcdir"}"
+export GOMODCACHE="${GOMODCACHE:-"$srcdir/go"}"
+
+build() {
+	go build -v \
+		-o bin/$pkgname \
+		-ldflags "-X main.version=v$pkgver -X main.commit=AlpineLinux" \
+		./cmd/vals
+}
+
+check() {
+	# TestValues_.* tests require the running backend services
+	# TestGetStringMap test fails in CI only (XXX: investigate more)
+	# Tests in pkg/providers/k8s module requires a kubeconfig file with a locally running k8s cluster
+	# shellcheck disable=2046
+	go test -skip 'TestValues_.*|TestGetStringMap' $(go list ./... | grep -v 'pkg/providers/k8s')
+}
+
+package() {
+	install -Dm755 bin/$pkgname -t "$pkgdir"/usr/bin/
+}
+
+sha512sums="
+de74c28c3bf6766d3e1af92f561bd85d77825e25de8f4c2330ef7c1121a4c420b69bd3ef07d2edfa8e8abaccb76e741c1cb4289b9ef3e10f2246deb69d932255  vals-0.35.0.tar.gz
+"

@@ -1,0 +1,38 @@
+# Maintainer: Andy Postnikov <apostnikov@gmail.com>
+pkgname=php83-pecl-opentelemetry
+_extname=opentelemetry
+pkgver=1.0.3
+_pkgver=${pkgver/_/}
+pkgrel=0
+pkgdesc="PHP 8.3 extension for OpenTelemetry auto-instrumentation support - PECL"
+url="https://pecl.php.net/package/amqp"
+arch="all"
+license="Apache-2.0"
+_phpv=83
+_php=php$_phpv
+depends="$_php-common"
+makedepends="$_php-dev"
+source="php-pecl-$_extname-$pkgver.tgz::https://pecl.php.net/get/$_extname-$_pkgver.tgz"
+builddir="$srcdir/$_extname-$_pkgver"
+
+build() {
+	phpize$_phpv
+	./configure --prefix=/usr --with-php-config=php-config$_phpv
+	make
+}
+
+check() {
+	$_php -d extension="$builddir"/modules/$_extname.so --ri $_extname
+	make NO_INTERACTION=1 REPORT_EXIT_STATUS=1 test TESTS=--show-diff
+}
+
+package() {
+	make INSTALL_ROOT="$pkgdir" install
+	local _confdir="$pkgdir"/etc/$_php/conf.d
+	mkdir -p $_confdir
+	echo "extension=$_extname" > $_confdir/$_extname.ini
+}
+
+sha512sums="
+3873bb118116ec3cecfea825f20656144b999dd8cd140f82694562de95da64d4ea7959a749a7e07478149c1b9c2787b235e9000614ba360dea8c76c40e5ad2a9  php-pecl-opentelemetry-1.0.3.tgz
+"

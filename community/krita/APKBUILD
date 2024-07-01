@@ -1,0 +1,107 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=krita
+pkgver=5.2.2
+pkgrel=3
+# armhf blocked by build failures
+# s390x: nobody is using an art tool there
+# riscv64: fails to build from source
+arch="all !s390x !armhf !riscv64"
+url="https://krita.org/"
+pkgdesc="Free digital painting application. Digital Painting, Creative Freedom!"
+license="GPL-2.0-or-later"
+depends="qt5-qtbase-sqlite"
+makedepends="
+	boost-dev
+	eigen-dev
+	exiv2-dev
+	extra-cmake-modules
+	fftw-dev
+	giflib-dev
+	gsl-dev
+	immer
+	karchive5-dev
+	kcompletion5-dev
+	kconfig5-dev
+	kcoreaddons5-dev
+	kcrash5-dev
+	kguiaddons5-dev
+	ki18n5-dev
+	kitemmodels5-dev
+	kitemviews5-dev
+	krita-kseexpr-dev
+	kwidgetsaddons5-dev
+	kwindowsystem5-dev
+	lager
+	lcms2-dev
+	libheif-dev
+	libjpeg-turbo-dev
+	libjxl-dev
+	libmypaint-dev
+	libraw-dev
+	libunibreak-dev
+	libxi-dev
+	opencolorio-dev
+	openexr-dev
+	poppler-qt5-dev
+	py3-qt5
+	py3-sip
+	qt5-qtbase-dev
+	qt5-qtmultimedia-dev
+	qt5-qtsvg-dev
+	qt5-qttools-dev
+	quazip-dev
+	samurai
+	tiff-dev
+	xcb-util-dev
+	zlib-dev
+	zug
+	"
+checkdepends="xvfb-run"
+source="https://download.kde.org/stable/krita/$pkgver/krita-$pkgver.tar.xz
+	0001-fftw-use-pkgconfig.patch
+	10-jxl.patch
+	20-sip-6.8.patch
+	"
+# -python subpackage temporarily removed due to incompatibilities with Python 3.12
+subpackages="$pkgname-dev $pkgname-lang"
+options="!check" # Breaks compilation on Musl https://bugs.kde.org/show_bug.cgi?id=412058
+
+build() {
+	GIT_DIR=. cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_KRITA_QT_DESIGNER_PLUGINS=ON \
+		-DBUILD_TESTING=OFF \
+		-DENABLE_UPDATERS=OFF \
+		-DKRITA_ENABLE_PCH=OFF
+	cmake --build build
+}
+
+check() {
+	cd build
+	CTEST_OUTPUT_ON_FAILURE=TRUE ctest
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+python() {
+	pkgdesc="$pkgdesc (python plugin)"
+	depends="python3 py3-qt5"
+
+	amove \
+		usr/share/krita/pykrita \
+		usr/lib/kritaplugins/kritapykrita.so \
+		usr/lib/krita-python-libs \
+		usr/bin/kritarunner
+}
+
+sha512sums="
+d2e55d9a6c7be79f5b6661a1bd605cdf1ce20ec78cdaab1ba19a4acca5397afa0c0e8bc1cbf60120993b156aef65ed35fde2de756841342d18221c82ea81a1eb  krita-5.2.2.tar.xz
+246d632e1afa28fbb1ef0abe1a62433694465e2f3918f8d110a7ad6ff99b27d94a7d91dbf061eccd6ecfa72d8dbff87c1b2696effcb482045aaf3f89169e9a0e  0001-fftw-use-pkgconfig.patch
+b4932c1d9c6136203d8cff92a7ed65089cf5b6bd3f80ccf093d524d39fd3ddac408793fb7ae3287ce78d5574c34440bc849a5a90b618c39638854ea6f5fd3205  10-jxl.patch
+2c5635550a397b57b3fb1d009bee41af78a0ab1bc77acdd6339933f44f9da4eee7d657efb1ba253238ac94cad99330b245b03c90af9f46fc269c43cde0691b8a  20-sip-6.8.patch
+"

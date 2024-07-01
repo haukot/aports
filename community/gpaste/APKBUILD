@@ -1,0 +1,65 @@
+# Contributor: Rasmus Thomsen <oss@cogitri.dev>
+# Maintainer: Natanael Copa <ncopa@alpinelinux.org>
+pkgname=gpaste
+pkgver=44.1
+pkgrel=1
+pkgdesc="Clipboard managment system"
+url="https://github.com/Keruspe/GPaste"
+arch="all !armhf !s390x !riscv64" # limited by gnome-control-center
+license="BSD-2-Clause"
+makedepends="
+	appstream-glib-dev
+	dbus-dev
+	desktop-file-utils
+	gcr4-dev
+	gjs-dev
+	gnome-control-center-dev
+	gtk+3.0-dev
+	libadwaita-dev
+	meson
+	mutter-dev
+	vala
+	"
+subpackages="
+	$pkgname-dev
+	$pkgname-lang
+	$pkgname-doc
+	$pkgname-gnome:_gnome:noarch
+	$pkgname-bash-completion:bashcomp
+	$pkgname-zsh-completion:zshcomp
+	"
+source="gpaste-$pkgver.tar.gz::https://github.com/Keruspe/GPaste/archive/v$pkgver.tar.gz
+	mutter-clutter-14.patch
+	"
+builddir="$srcdir/GPaste-$pkgver"
+
+build() {
+	abuild-meson \
+		-Db_lto=true \
+		-Dsystemd=false \
+		-Dintrospection=true \
+		-Dvapi=true \
+		. output
+	meson compile -C output
+}
+
+check() {
+	meson test --no-rebuild --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+_gnome() {
+	install_if="$pkgname=$pkgver-r$pkgrel gnome-shell gnome-control-center"
+	depends="gnome-control-center"
+
+	amove usr/share/gnome-shell
+	amove usr/share/gnome-control-center
+}
+
+sha512sums="
+50cf65b1f89415d6bef8e2c7bcde5d775b2b3c05e9e296df23a2913efd13fa678adb543393d536ee9e7682dc604498f943babc840d821a6c8fbebbdcc6c2d39a  gpaste-44.1.tar.gz
+1042e122febb75ef65c4d6ad97b5c0640f43ac97a9a827e0cd224c8639495598f6487e3c7d73b1d363503fae8bd20e8b0f508f98f50e0380f082ee81f0adfd0f  mutter-clutter-14.patch
+"

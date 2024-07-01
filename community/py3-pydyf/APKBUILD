@@ -1,0 +1,41 @@
+# Maintainer: Patrycja Rosa <alpine@ptrcnull.me>
+pkgname=py3-pydyf
+_pyname=pydyf
+pkgver=0.10.0
+pkgrel=0
+pkgdesc="A low-level PDF generator"
+url="https://pypi.org/project/pydyf/"
+arch="noarch"
+license="BSD-3-Clause"
+makedepends="py3-flit-core py3-gpep517"
+checkdepends="
+	ghostscript
+	py3-coverage
+	py3-pillow
+	py3-pytest
+	py3-pytest-xdist
+	"
+subpackages="$pkgname-pyc"
+source="https://files.pythonhosted.org/packages/source/p/pydyf/pydyf-$pkgver.tar.gz"
+builddir="$srcdir/$_pyname-$pkgver"
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	python3 -m venv --clear --without-pip --system-site-packages .testenv
+	gpep517 install-wheel --destdir .testenv --prefix '' .dist/*.whl
+	.testenv/bin/python3 -m pytest
+}
+
+package() {
+	gpep517 install-wheel --destdir "$pkgdir" \
+		.dist/*.whl
+}
+
+sha512sums="
+7c35a818569dda0edb0dda5e31c595a65e2637594a7a6815ef3b41e34c10a4f2a1b3412af59f48fee2e72e8bf23c01e651b46130e1927645cbafc7d99c104574  pydyf-0.10.0.tar.gz
+"

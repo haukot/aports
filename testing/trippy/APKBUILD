@@ -1,0 +1,43 @@
+# Contributor: Simon Frankenberger <simon-alpine@fraho.eu>
+# Maintainer: Simon Frankenberger <simon-alpine@fraho.eu>
+pkgname=trippy
+pkgver=0.10.0
+pkgrel=0
+pkgdesc="combines the functionality of traceroute and ping and is designed to assist with the analysis of networking issues."
+url="https://github.com/fujiapple852/trippy/"
+arch="all !loongarch64" # loongarch64: blocked by libc crate
+license="Apache-2.0"
+makedepends="cargo cargo-auditable"
+subpackages="
+	$pkgname-bash-completion
+	$pkgname-zsh-completion
+	"
+source="https://github.com/fujiapple852/trippy/archive/$pkgver/trippy-v$pkgver.tar.gz"
+
+prepare() {
+	default_prepare
+	cargo fetch --target="$CTARGET" --locked
+}
+
+build() {
+	cargo auditable build --release --frozen
+	local compgen="target/release/trip --generate"
+	[ -d completions ] || mkdir -v completions
+	$compgen bash >"completions/$pkgname"
+	$compgen zsh  >"completions/_$pkgname"
+}
+
+check() {
+	cargo auditable test --frozen
+}
+
+package() {
+	install -Dm 755 -t "$pkgdir"/usr/bin target/release/trip
+	install -Dm 644 -t "$pkgdir"/usr/share/doc/"$pkgname" README.md
+	install -Dm 644 "completions/$pkgname" -t "$pkgdir/usr/share/bash-completion/completions/"
+	install -Dm 644 "completions/_$pkgname" -t "$pkgdir/usr/share/zsh/site-functions/"
+}
+
+sha512sums="
+888812ba578c53403769df7c1192577e8e7e23fbcd529a21edba7fa2e0ac7f9463ca40e5f4137aa732bec8407d7b5252d485e4a5b2d29ef4a9da41e20eaa5bee  trippy-v0.10.0.tar.gz
+"

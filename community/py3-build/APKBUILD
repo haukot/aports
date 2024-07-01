@@ -1,0 +1,58 @@
+# Contributor: Fabian Affolter <fabian@affolter-engineering.ch>
+# Maintainer: Fabian Affolter <fabian@affolter-engineering.ch>
+pkgname=py3-build
+pkgver=1.2.1
+pkgrel=0
+pkgdesc="Correct PEP517 package builder"
+url="https://github.com/pypa/build"
+arch="noarch"
+license="MIT"
+depends="python3 py3-packaging py3-pyproject-hooks"
+makedepends="py3-wheel py3-flit-core py3-gpep517 py3-installer"
+checkdepends="
+	py3-filelock
+	py3-pytest-forked
+	py3-pytest-mock
+	py3-pytest-rerunfailures
+	py3-pytest-xdist
+	py3-setuptools
+	"
+subpackages="$pkgname-pyc"
+source="https://github.com/pypa/build/archive/refs/tags/$pkgver/py3-build-$pkgver.tar.gz"
+builddir="$srcdir/build-$pkgver"
+
+replaces=py-build # Backwards compatibility
+provides=py-build=$pkgver-r$pkgrel # Backwards compatibility
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	python3 -m venv --clear --without-pip --system-site-packages .testenv
+	.testenv/bin/python3 -m installer .dist/build*.whl
+	.testenv/bin/python3 -m pytest \
+		--deselect tests/test_env.py::test_uv_impl_install_cmd_well_formed \
+		--deselect tests/test_env.py::test_requirement_installation \
+		--deselect tests/test_env.py::test_venv_creation \
+		--deselect tests/test_env.py::test_venv_creation \
+		--deselect tests/test_env.py::test_uv_impl_install_cmd_well_formed \
+		--deselect tests/test_env.py::test_uv_impl_install_cmd_well_formed \
+		--deselect tests/test_env.py::test_external_uv_detection_success \
+		--deselect tests/test_env.py::test_uv_impl_install_cmd_well_formed \
+		--deselect tests/test_env.py::test_venv_creation \
+		--deselect tests/test_main.py::test_build_package \
+		--deselect tests/test_main.py::test_output \
+		--deselect tests/test_main.py::test_build_package_via_sdist
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/build*.whl
+}
+
+sha512sums="
+77003e16d3776c3a4be920251bf14650eea112b92d94116cb1893195b8e16aae57321206ae63267119247f2794f220c891b7d913e07a8258b313d34c07d54fe9  py3-build-1.2.1.tar.gz
+"

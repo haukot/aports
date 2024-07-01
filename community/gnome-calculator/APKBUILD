@@ -1,0 +1,49 @@
+# Contributors: Rasmus Thomsen <oss@cogitri.dev>
+# Maintainer: team/gnome <ablocorrea@hotmail.com>
+pkgname=gnome-calculator
+pkgver=46.1
+pkgrel=0
+pkgdesc="Calculator for solving mathematical equations"
+url="https://wiki.gnome.org/Apps/Calculator"
+# s390x: doubt anyone would run this on a mainframe
+arch="all !s390x"
+license="GPL-3.0-or-later"
+makedepends="
+	glib-dev
+	gtksourceview5-dev
+	gtk4.0-dev
+	itstool
+	libadwaita-dev
+	libgee-dev
+	libsoup3-dev
+	libxml2-dev
+	meson
+	mpc1-dev
+	mpfr-dev
+	vala
+	"
+subpackages="$pkgname-devhelp $pkgname-doc $pkgname-lang $pkgname-dev"
+source="https://download.gnome.org/sources/gnome-calculator/${pkgver%%.*}/gnome-calculator-$pkgver.tar.xz"
+
+if [ "$CARCH" = armhf ]; then
+	options="$options !check" # tests time out on armhf
+fi
+
+build() {
+	abuild-meson \
+		-Db_lto=true \
+		. output
+	meson compile -C output
+}
+
+check() {
+	meson test --no-rebuild --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="
+b859a35e614ea5415fbb7a03663f1bf184e7f108882c2093511142d8c067e42f6dd11973cc047552bdd9a74d8ee7e39a00ca42009bea739d2b088b2f90affde1  gnome-calculator-46.1.tar.xz
+"

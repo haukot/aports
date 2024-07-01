@@ -1,0 +1,63 @@
+# Maintainer: Natanael Copa <ncopa@alpinelinux.org>
+pkgname=conky
+pkgver=1.21.0
+pkgrel=0
+pkgdesc="Advanced, highly configurable system monitor for X based on torsmo"
+url="https://github.com/brndnmtthws/conky"
+arch="all"
+license="GPL-3.0-or-later"
+makedepends="
+	alsa-lib-dev
+	cairo-dev
+	cmake
+	curl-dev
+	gawk
+	glib-dev
+	gperf
+	imlib2-dev
+	libxdamage-dev
+	libxext-dev
+	libxft-dev
+	libxinerama-dev
+	libxml2-dev
+	linux-headers
+	lua5.4-dev
+	ncurses-dev
+	pango-dev
+	samurai
+	tolua++
+	wayland-dev
+	libxi-dev
+	wayland-protocols
+	wireless-tools-dev
+	"
+subpackages="$pkgname-doc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/brndnmtthws/conky/archive/v$pkgver.tar.gz"
+options="!check"
+
+build() {
+	cmake -B build -G Ninja \
+		-DRELEASE=ON \
+		-DCMAKE_BUILD_TYPE=MinSizeRel \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DBUILD_CURL=ON \
+		-DBUILD_XDBE=ON \
+		-DBUILD_IMLIB2=ON \
+		-DBUILD_RSS=ON \
+		-DBUILD_WLAN=ON \
+		-DBUILD_I18N=OFF \
+		-DBUILD_LUA_CAIRO=ON \
+		-DBUILD_WAYLAND=ON \
+		-DLUA_LIBRARIES="/usr/lib/lua5.4/liblua.so" \
+		-DVc_ENABLE_INSTALL=OFF
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+	install -D -m644 COPYING $pkgdir/usr/share/licenses/$pkgname/LICENSE
+}
+
+sha512sums="
+584b74cacb3d398bdaf345558c8431d85c3bd1371cf58f678c53d6d01a76804589678ceb4bbf6073094dc2f99705e14d9e4f8e61701fcf7608504ddea7d1f2ba  conky-1.21.0.tar.gz
+"

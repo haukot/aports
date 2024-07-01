@@ -1,0 +1,70 @@
+# Maintainer: Andy Postnikov <apostnikov@gmail.com>
+pkgname=uv
+pkgver=0.2.13
+pkgrel=0
+pkgdesc="Extremely fast Python package installer and resolver, written in Rust"
+url="https://github.com/astral-sh/uv"
+arch="all"
+license="Apache-2.0 MIT"
+makedepends="
+	bzip2-dev
+	cargo
+	cmake
+	py3-gpep517
+	py3-setuptools
+	py3-wheel
+	py3-maturin
+	"
+subpackages="
+	$pkgname-bash-completion
+	$pkgname-zsh-completion
+	$pkgname-fish-completion
+	py3-$pkgname-pyc
+	py3-$pkgname:py3:noarch
+	"
+source="$pkgname-$pkgver.tar.gz::https://github.com/astral-sh/uv/archive/refs/tags/$pkgver.tar.gz"
+options="net"
+
+prepare() {
+	default_prepare
+	cargo fetch --target="$CTARGET" --locked
+}
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--config-json '{"build-args": "--locked", "build-option": "--release"}' \
+		--output-fd 3 3>&1 >&2
+
+	mkdir -p completions
+	local _uv="target/release/uv --generate-shell-completion"
+	$_uv bash > completions/$pkgname
+	$_uv fish > completions/$pkgname.fish
+	$_uv zsh > completions/_$pkgname
+}
+
+check() {
+	cargo test --frozen --release --bin uv
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" .dist/*.whl
+
+	install -Dm 644 "completions/$pkgname" -t "$pkgdir/usr/share/bash-completion/completions/"
+	install -Dm 644 "completions/$pkgname.fish" -t "$pkgdir/usr/share/fish/vendor_completions.d/"
+	install -Dm 644 "completions/_$pkgname" -t "$pkgdir/usr/share/zsh/site-functions/"
+
+	install -Dm0644 LICENSE-APACHE "$pkgdir/usr/share/licenses/$pkgname/LICENSE-APACHE"
+	install -Dm0644 LICENSE-MIT "$pkgdir/usr/share/licenses/$pkgname/LICENSE-MIT"
+}
+
+py3() {
+	pkgdesc="$pkgdesc (python module)"
+	depends="$pkgname=$pkgver-r$pkgrel"
+
+	amove usr/lib/python3*
+}
+
+sha512sums="
+6156585fa576d2a71706c3c09c64eb8b87c6c519cbc95e88db1e69cb6500c0aa6cffe09c3d4d5d0f4cf7f1b76685f969435b1f83d5a0859c422c9c760b2d5579  uv-0.2.13.tar.gz
+"

@@ -1,0 +1,65 @@
+# Contributor: Will Sinatra <wpsinatra@gmail.com>
+# Maintainer: Will Sinatra <wpsinatra@gmail.com>
+pkgname=doctl
+pkgver=1.107.0
+pkgrel=1
+pkgdesc="Official command line interface for the DigitalOcean API"
+url="https://github.com/digitalocean/doctl"
+license="Apache-2.0"
+# loongarch64: fails to build due to deps
+# wait a new version. https://github.com/digitalocean/doctl/pull/1541
+arch="all !loongarch64"
+makedepends="go"
+subpackages="
+	$pkgname-bash-completion
+	$pkgname-zsh-completion
+	$pkgname-fish-completion
+	"
+source="https://github.com/digitalocean/doctl/archive/v$pkgver/doctl-$pkgver.tar.gz
+	enable-cgo-in-tests.patch"
+
+export GOCACHE="${GOCACHE:-"$srcdir/go-cache"}"
+export GOTMPDIR="${GOTMPDIR:-"$srcdir"}"
+export GOMODCACHE="${GOMODCACHE:-"$srcdir/go"}"
+
+# secfixes:
+#   1.102.0-r0:
+#     - CVE-2023-48795
+
+build() {
+	maj_min=${pkgver%*.*}
+	major=${maj_min%.*}
+	minor=${maj_min#*.}
+	patch=${pkgver#*.*.*}
+
+	go build -v \
+		-mod=readonly \
+		-ldflags "-extldflags \"$LDFLAGS\" \
+			-X github.com/digitalocean/doctl.Major=$major \
+			-X github.com/digitalocean/doctl.Minor=$minor \
+			-X github.com/digitalocean/doctl.Patch=$patch \
+			-X github.com/digitalocean/doctl.Label=alpine-$pkgrel" \
+		./cmd/...
+}
+
+check() {
+	go test -mod=readonly ./integration
+}
+
+package() {
+	install -Dm755 doctl -t "$pkgdir"/usr/bin/
+
+	# setup completions
+	mkdir -p "$pkgdir"/usr/share/bash-completion/completions \
+		"$pkgdir"/usr/share/zsh/site-functions \
+		"$pkgdir"/usr/share/fish/vendor_completions.d
+
+	"$pkgdir"/usr/bin/doctl completion bash > "$pkgdir"/usr/share/bash-completion/completions/doctl
+	"$pkgdir"/usr/bin/doctl completion zsh > "$pkgdir"/usr/share/zsh/site-functions/_doctl
+	"$pkgdir"/usr/bin/doctl completion fish > "$pkgdir"/usr/share/fish/vendor_completions.d/doctl.fish
+}
+
+sha512sums="
+0492703dc39954a13c5ba614d0d6033c5c7cc5e8d0b3ec7dcb76d8fe17fa18b69a15532aef72aea1751f44b4855fcf5006c3a0be3205096a55b7da4a276d6f49  doctl-1.107.0.tar.gz
+3fa9d1668136d3c24922da611f8c27f0eb69d14516c8c4e2bceef161aeadaa0d3bfe5ca562a278a7c56791dd5dbfbbaa8bc2a87235772bd5c455cd46c7654078  enable-cgo-in-tests.patch
+"

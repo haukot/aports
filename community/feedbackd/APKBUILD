@@ -1,0 +1,48 @@
+# Contributor: Rasmus Thomsen <oss@cogitri.dev>
+# Maintainer: team/phosh <newbyte@postmarketos.org>
+pkgname=feedbackd
+pkgver=0.4.0
+pkgrel=0
+pkgdesc="Daemon to provide haptic, LED, and audio feedback triggered by application events"
+url="https://source.puri.sm/Librem5/feedbackd"
+arch="all"
+license="GPL-3.0-or-later"
+depends="dbus feedbackd-device-themes"
+makedepends="
+	gi-docgen
+	glib-dev
+	gmobile-dev
+	gobject-introspection-dev
+	gsound-dev
+	gtk-doc
+	json-glib-dev
+	libgudev-dev
+	meson
+	vala
+	umockdev-dev
+	"
+subpackages="$pkgname-dev $pkgname-doc"
+source="https://sources.phosh.mobi/releases/feedbackd/feedbackd-$pkgver.tar.xz"
+install="$pkgname.pre-install $pkgname.pre-upgrade"
+
+build() {
+	abuild-meson \
+		-Db_lto=true \
+		-Dgtk_doc=true \
+		. output
+	meson compile -C output
+}
+
+check() {
+	meson test --no-rebuild --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+	install -Dm644 "$builddir"/debian/feedbackd.udev \
+		"$pkgdir"/usr/lib/udev/rules.d/90-feedbackd.rules
+}
+
+sha512sums="
+43d6f6cd84ae6ebfd0ed0442080f80e75a89bb1a56bcbc9bf9cb357d6ac680fbd6e0d487ef89f8759f3093b09bedc427cba0958a761c4307bcd3633bd8d8f26e  feedbackd-0.4.0.tar.xz
+"

@@ -1,0 +1,48 @@
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=qt6
+pkgname=qt6-qtquicktimeline
+pkgver=6.6.3
+pkgrel=0
+pkgdesc="Qt module for keyframe-based timeline construction"
+url="https://qt.io/"
+arch="all"
+license="LGPL-2.1-only AND LGPL-3.0-only AND GPL-3.0-only AND Qt-GPL-exception-1.0"
+depends_dev="
+	qt6-qtbase-dev
+	qt6-qtdeclarative-dev
+	vulkan-headers
+	"
+makedepends="$depends_dev
+	cmake
+	perl
+	samurai
+	"
+subpackages="$pkgname-dev"
+options="!check" # No tests
+builddir="$srcdir/qtquicktimeline-everywhere-src-${pkgver/_/-}"
+
+case $pkgver in
+	*_alpha*|*_beta*|*_rc*) _rel=development_releases;;
+	*) _rel=official_releases;;
+esac
+
+source="https://download.qt.io/$_rel/qt/${pkgver%.*}/${pkgver/_/-}/submodules/qtquicktimeline-everywhere-src-${pkgver/_/-}.tar.xz"
+
+build() {
+	export CFLAGS="$CFLAGS -g1 -flto=auto"
+	export CXXFLAGS="$CXXFLAGS -g1 -flto=auto"
+	cmake -B build -G Ninja \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr
+	cmake --build build
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+1e0976a34496f3961f958a38296b1aebf5bb0be7e077b70a91d93ff4e2c652b09ba5cdf94e26c748988ce489d025328a0bd9feca77bc2ddfb360815682055e47  qtquicktimeline-everywhere-src-6.6.3.tar.xz
+"

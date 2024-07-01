@@ -1,0 +1,46 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: team/kde <bribbers@disroot.org>
+
+# The group tag is just to easily find this APKBUILD by some scripts for automation
+# group=kde-applications
+pkgname=kdesdk-thumbnailers
+pkgver=24.05.1
+pkgrel=0
+# armhf blocked by extra-cmake-modules
+arch="all !armhf"
+url="https://www.kde.org/applications/development/"
+pkgdesc="Plugins for the thumbnailing system"
+license="GPL-2.0-only OR GPL-3.0-only"
+makedepends="
+	extra-cmake-modules
+	gettext-dev
+	kconfig-dev
+	ki18n-dev
+	kio-dev
+	qt6-qtbase-dev
+	samurai
+	"
+subpackages="$pkgname-lang"
+_repo_url="https://invent.kde.org/sdk/kdesdk-thumbnailers.git"
+source="https://download.kde.org/stable/release-service/$pkgver/src/kdesdk-thumbnailers-$pkgver.tar.xz"
+
+build() {
+	cmake -B build -G Ninja \
+		-DBUILD_WITH_QT6=ON \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib
+	cmake --build build
+}
+
+check() {
+	ctest --test-dir build --output-on-failure
+}
+
+package() {
+	DESTDIR="$pkgdir" cmake --install build
+}
+
+sha512sums="
+2e24dd168bc5675969347c85ed326196730fd77965b8f884c3b112df6ebc6fcb5853abf18ec1c0e5b174e47a0078f8a2e3d9778d7b6e5e1e6d6ca1bafef96c26  kdesdk-thumbnailers-24.05.1.tar.xz
+"

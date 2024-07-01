@@ -1,0 +1,42 @@
+# Contributor: Rasmus Thomsen <oss@cogitri.dev>
+# Maintainer: Natanael Copa <ncopa@alpinelinux.org>
+pkgname=gnote
+pkgver=46.0
+pkgrel=2
+pkgdesc="Gnote is a port of Tomboy to C++"
+url="https://wiki.gnome.org/Apps/Gnote"
+arch="all"
+license="GPL-3.0-or-later"
+depends="dbus:org.freedesktop.Secrets"
+makedepends="
+	appstream-glib
+	desktop-file-utils
+	glibmm2.68-dev
+	gspell-dev
+	gtkmm4-dev
+	itstool
+	libadwaita-dev
+	libsecret-dev
+	libxslt-dev
+	meson
+	util-linux-dev
+	"
+subpackages="$pkgname-dbg $pkgname-lang $pkgname-doc"
+source="https://download.gnome.org/sources/gnote/${pkgver%.*}/gnote-$pkgver.tar.xz"
+
+build() {
+	abuild-meson -Db_lto=true . output
+	meson compile -C output
+}
+
+check() {
+	meson test --no-rebuild --print-errorlogs -C output
+}
+
+package() {
+	DESTDIR="$pkgdir" meson install --no-rebuild -C output
+}
+
+sha512sums="
+a56557ed1d5adb3d5416d8032218c953204737dd813e09c13875a084fd579145f94470b61d8c2322d01dba06ad0bb26d553e5009f5d3e10db284afc8b42e0b79  gnote-46.0.tar.xz
+"

@@ -1,0 +1,48 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=py3-ovos-config
+pkgver=0.0.12
+pkgrel=0
+pkgdesc="OVOS configuration manager library"
+url="https://github.com/OpenVoiceOS/ovos-config"
+arch="noarch"
+license="Apache-2.0"
+depends="
+	py3-combo-lock
+	py3-dateutil
+	py3-ovos-utils
+	py3-ovos-utils
+	py3-rich-click
+	py3-watchdog
+	py3-yaml
+	"
+makedepends="
+	py3-gpep517
+	py3-setuptools
+	py3-wheel
+	"
+checkdepends="py3-pytest"
+subpackages="$pkgname-pyc"
+source="https://github.com/OpenVoiceOS/ovos-config/archive/V$pkgver/ovos-config-$pkgver.tar.gz"
+builddir="$srcdir/ovos-config-$pkgver"
+
+build() {
+	gpep517 build-wheel \
+		--wheel-dir .dist \
+		--output-fd 3 3>&1 >&2
+}
+
+check() {
+	python3 -m venv --clear --without-pip --system-site-packages .testenv
+	.testenv/bin/python3 -m installer .dist/*.whl
+	.testenv/bin/python3 -m pytest
+}
+
+package() {
+	python3 -m installer -d "$pkgdir" \
+		.dist/*.whl
+}
+
+sha512sums="
+3628935a46db0043926adb719a5637e954b7fd38089b1f6476312a2f10a72e2ceeda35c1513d300c2f14cb8ac995c6dabbbd374a6a5ffb172b2828f0f47abb09  ovos-config-0.0.12.tar.gz
+"
